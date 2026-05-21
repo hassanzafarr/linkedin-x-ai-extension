@@ -33,7 +33,7 @@ EngageFlow AI is a state-of-the-art browser assistant that helps professionals, 
 *   **Frontend Core:** React 18 & Vite
 *   **Styling System:** Vanilla CSS & Tailwind CSS for maximum responsiveness and high-end glassmorphic visuals
 *   **Extension Runtime:** Chrome Extension Manifest V3 (Service Worker, Sidepanel API, Content Scripts, Options page)
-*   **AI Engine:** Anthropic Messages API (`claude-3-5-haiku-20241022`)
+*   **AI Engine:** Anthropic Messages API (`claude-haiku-4-5-20251001`)
 
 ---
 
