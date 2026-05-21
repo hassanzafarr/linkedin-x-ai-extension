@@ -25,7 +25,7 @@ export default function Options() {
 
   async function testConnection() {
     setTestStatus('testing');
-    const result = await chrome.runtime.sendMessage({ type: 'TEST_API_KEY', apiKey });
+    const result = await chrome.runtime.sendMessage({ type: 'TEST_API_KEY', apiKey: apiKey.trim() });
     setTestStatus(result.ok ? 'ok' : 'error');
     setTimeout(() => setTestStatus('idle'), 3000);
   }

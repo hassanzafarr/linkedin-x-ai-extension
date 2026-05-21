@@ -8,7 +8,7 @@ export const getApiKey = () =>
   chrome.storage.sync.get(['claudeApiKey', 'geminiApiKey']).then(r => r.claudeApiKey || r.geminiApiKey || '');
 
 export const saveApiKey = (key) =>
-  chrome.storage.sync.set({ claudeApiKey: key });
+  chrome.storage.sync.set({ claudeApiKey: key.trim() });
 
 export const getSettings = () =>
   chrome.storage.sync.get([

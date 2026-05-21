@@ -2,13 +2,15 @@ const CLAUDE_URL = 'https://api.anthropic.com/v1/messages';
 
 export async function callClaude(prompt, apiKey) {
   if (!apiKey) throw new Error('NO_API_KEY');
+  const cleanKey = apiKey.trim();
 
   const response = await fetch(CLAUDE_URL, {
     method: 'POST',
     headers: {
-      'x-api-key': apiKey,
+      'x-api-key': cleanKey,
       'anthropic-version': '2023-06-01',
       'content-type': 'application/json',
+      'anthropic-dangerous-direct-browser-access': 'true',
     },
     body: JSON.stringify({
       model: 'claude-3-5-haiku-20241022',
