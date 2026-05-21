@@ -23,10 +23,10 @@ function scanAndInject(platform) {
 }
 
 function injectX() {
-  // Strategy: find every tweetTextarea_*. For each one, walk up to find the
-  // nearest toolbar (supporting both case variations and role="toolbar").
-  // Append our icon at the start of that toolbar.
-  const textareas = document.querySelectorAll('[data-testid^="tweetTextarea_"]');
+  // Strategy: find every contenteditable textbox or tweetTextarea.
+  // For each one, walk up to find the nearest toolbar (supporting both case
+  // variations, role="toolbar", or falling back to the parent of standard composer icons).
+  const textareas = document.querySelectorAll('[data-testid^="tweetTextarea_"], div[role="textbox"][contenteditable="true"], div[contenteditable="true"].public-DraftEditor-content');
 
   textareas.forEach(textArea => {
     // Walk up parents to find the nearest toolbar belonging to this composer
@@ -34,6 +34,16 @@ function injectX() {
     let toolbar = null;
     while (cur && cur !== document.body) {
       toolbar = cur.querySelector('[data-testid="toolBar"], [data-testid="toolbar"], [role="toolbar"]');
+      if (!toolbar) {
+        // Fallback: locate toolbar by finding parent container of native composer icons
+        const actionIcon = cur.querySelector('[data-testid="fileInput"], [data-testid="gif"], [data-testid="emojiPicker"]');
+        if (actionIcon) {
+          toolbar = actionIcon.parentElement;
+          if (toolbar && toolbar.clientWidth < 50) {
+            toolbar = toolbar.parentElement;
+          }
+        }
+      }
       if (toolbar) break;
       cur = cur.parentElement;
     }
