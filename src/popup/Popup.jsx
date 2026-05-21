@@ -20,59 +20,39 @@ export default function Popup() {
   }
 
   return (
-    <div style={{ width: 260, padding: 16 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-        <div style={{
-          width: 28, height: 28, background: '#7c3aed', borderRadius: 8,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 14, color: 'white', fontWeight: 700,
-        }}>D</div>
-        <span style={{ fontWeight: 700, fontSize: 16, color: '#f1f5f9' }}>Draftly</span>
+    <div className="w-[260px] p-4">
+      <div className="flex items-center gap-2 mb-4">
+        <div className="w-7 h-7 bg-violet-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">D</div>
+        <span className="font-bold text-base text-slate-100">Draftly</span>
       </div>
 
+      {hasKey === null && (
+        <div className="card mb-3 h-8 animate-pulse" />
+      )}
+
       {hasKey === false && (
-        <div style={{
-          background: '#4c1d95', border: '1px solid #6d28d9', borderRadius: 8,
-          padding: '8px 12px', marginBottom: 12, fontSize: 12, color: '#c4b5fd',
-        }}>
+        <div className="bg-violet-900 border border-violet-700 rounded-lg px-3 py-2 mb-3 text-xs text-violet-300">
           ⚠ Set your Gemini API key to activate AI features.
         </div>
       )}
 
       {hasKey === true && (
-        <div style={{
-          background: '#064e3b', border: '1px solid #065f46', borderRadius: 8,
-          padding: '8px 12px', marginBottom: 12, fontSize: 12, color: '#6ee7b7',
-        }}>
+        <div className="bg-emerald-950 border border-emerald-900 rounded-lg px-3 py-2 mb-3 text-xs text-emerald-300">
           ✓ API key active
         </div>
       )}
 
-      <button
-        onClick={openSidePanel}
-        style={{
-          width: '100%', padding: '9px 0', background: '#7c3aed', color: 'white',
-          border: 'none', borderRadius: 8, fontWeight: 600, fontSize: 13,
-          cursor: 'pointer', marginBottom: 8,
-        }}
-      >
+      <button onClick={openSidePanel} className="btn-primary w-full py-2.5 text-sm mb-2">
         ✦ Open Draft Panel
       </button>
 
-      <button
-        onClick={openOptions}
-        style={{
-          width: '100%', padding: '9px 0', background: '#1e1b4b', color: '#a78bfa',
-          border: '1px solid #4c1d95', borderRadius: 8, fontWeight: 600, fontSize: 13,
-          cursor: 'pointer',
-        }}
-      >
+      <button onClick={openOptions} className="btn-secondary w-full py-2.5 text-sm border border-solid border-indigo-800">
         ⚙ Settings
       </button>
 
-      <div style={{ marginTop: 12, fontSize: 11, color: '#475569', textAlign: 'center' }}>
+      <p className="mt-3 text-[11px] text-slate-500 text-center">
         Hover posts on LinkedIn or X to draft replies
-      </div>
+      </p>
     </div>
   );
 }
