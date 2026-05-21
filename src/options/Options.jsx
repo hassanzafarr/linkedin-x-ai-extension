@@ -4,6 +4,8 @@ import { getApiKey, saveApiKey, getVoiceProfile, saveVoiceProfile, getSettings, 
 export default function Options() {
   const [apiKey, setApiKey] = useState('');
   const [voiceSamples, setVoiceSamples] = useState('');
+  const [story, setStory] = useState('');
+  const [writingStyle, setWritingStyle] = useState('');
   const [feedEnabled, setFeedEnabled] = useState(true);
   const [replyEnabled, setReplyEnabled] = useState(true);
   const [threshold, setThreshold] = useState(60);
@@ -13,10 +15,28 @@ export default function Options() {
   const [testError, setTestError] = useState('');
   const [saveStatus, setSaveStatus] = useState('idle'); // idle | saving | saved
 
+  const [profileUrl, setProfileUrl] = useState('');
+  const [importStatus, setImportStatus] = useState('idle'); // idle | running | ok | error
+  const [importStage, setImportStage] = useState('');
+  const [importError, setImportError] = useState('');
+  const [importSummary, setImportSummary] = useState(null);
+
+  useEffect(() => {
+    function onProgress(msg) {
+      if (msg?.type === 'IMPORT_LINKEDIN_PROGRESS') {
+        setImportStage(msg.message || msg.stage || '');
+      }
+    }
+    chrome.runtime.onMessage.addListener(onProgress);
+    return () => chrome.runtime.onMessage.removeListener(onProgress);
+  }, []);
+
   useEffect(() => {
     Promise.all([getApiKey(), getVoiceProfile(), getSettings()]).then(([key, voice, settings]) => {
       setApiKey(key || '');
       setVoiceSamples(voice?.rawSamples || '');
+      setStory(voice?.story || '');
+      setWritingStyle(voice?.writingStyle || '');
       setFeedEnabled(settings.feedScannerEnabled);
       setReplyEnabled(settings.replyEnabled);
       setThreshold(settings.feedScannerThreshold);
@@ -38,11 +58,44 @@ export default function Options() {
     setTimeout(() => setTestStatus('idle'), 8000);
   }
 
+  async function importFromLinkedIn() {
+    setImportStatus('running');
+    setImportError('');
+    setImportSummary(null);
+    setImportStage('Starting…');
+    try {
+      const result = await chrome.runtime.sendMessage({
+        type: 'IMPORT_LINKEDIN',
+        profileUrl: profileUrl.trim(),
+      });
+      console.log('[Options] Import result:', result);
+      if (!result?.ok) {
+        setImportStatus('error');
+        setImportError(result?.error || 'Unknown error');
+        return;
+      }
+      if (result.rawSamples) {
+        setVoiceSamples(prev => prev ? `${prev}\n\n---\n\n${result.rawSamples}` : result.rawSamples);
+      }
+      if (result.story) setStory(result.story);
+      if (result.writingStyle) setWritingStyle(result.writingStyle);
+      setImportSummary({
+        name: result.name,
+        headline: result.headline,
+        count: result.sampleCount,
+      });
+      setImportStatus('ok');
+    } catch (err) {
+      setImportStatus('error');
+      setImportError(err.message || String(err));
+    }
+  }
+
   async function handleSave() {
     setSaveStatus('saving');
     await Promise.all([
       saveApiKey(apiKey),
-      saveVoiceProfile({ rawSamples: voiceSamples, updatedAt: Date.now() }),
+      saveVoiceProfile({ rawSamples: voiceSamples, story, writingStyle, updatedAt: Date.now() }),
       saveSettings({ feedScannerEnabled: feedEnabled, replyEnabled, feedScannerThreshold: threshold, defaultTone }),
     ]);
     setSaveStatus('saved');
@@ -97,11 +150,69 @@ export default function Options() {
       {/* Voice Profile */}
       <div className="card mb-5">
         <div className="section-title">Voice Profile</div>
-        <label className="label">Paste 3–10 of your recent LinkedIn or X posts</label>
+
+        <label className="label">Import from LinkedIn</label>
+        <div className="flex gap-2">
+          <input
+            type="url"
+            className="input-field"
+            placeholder="https://linkedin.com/in/your-profile"
+            value={profileUrl}
+            onChange={e => setProfileUrl(e.target.value)}
+            disabled={importStatus === 'running'}
+          />
+          <button
+            className="btn-secondary whitespace-nowrap px-4 py-2 rounded-lg text-sm font-semibold"
+            onClick={importFromLinkedIn}
+            disabled={!profileUrl || importStatus === 'running' || !apiKey}
+          >
+            {importStatus === 'running' ? '…' : importStatus === 'ok' ? '✓ Imported' : 'Import'}
+          </button>
+        </div>
+        <p className="text-xs text-slate-500 mt-2">
+          Make sure you are logged in to LinkedIn in this Chrome. We open your profile in a background tab, scroll it, and analyze visible text. Takes ~30–45s.
+        </p>
+        {importStatus === 'running' && (
+          <p className="text-xs text-violet-300 mt-2">{importStage}</p>
+        )}
+        {importStatus === 'ok' && importSummary && (
+          <p className="text-xs text-emerald-400 mt-2">
+            Imported {importSummary.count} samples
+            {importSummary.name && ` for ${importSummary.name}`}
+            {importSummary.headline && ` — ${importSummary.headline}`}.
+          </p>
+        )}
+        {importStatus === 'error' && importError && (
+          <pre className="text-xs text-red-400 mt-2 whitespace-pre-wrap break-all bg-red-950/30 border border-red-900/50 rounded p-2">
+            {importError}
+          </pre>
+        )}
+
+        <label className="label mt-4">Your story in a few sentences</label>
+        <p className="text-xs text-slate-500 mb-1">What you work on and care about. Auto-filled from LinkedIn import — edit if needed.</p>
+        <textarea
+          className="input-field"
+          rows={4}
+          placeholder="I work on… I care about… The unique experiences that shape how I show up in comments."
+          value={story}
+          onChange={e => setStory(e.target.value)}
+        />
+
+        <label className="label mt-4">Writing style</label>
+        <p className="text-xs text-slate-500 mb-1">How you write — tone, sentence length, recurring patterns. Auto-filled from import.</p>
+        <textarea
+          className="input-field"
+          rows={4}
+          placeholder="Conversational, short sentences, occasional bullet lists, no emojis…"
+          value={writingStyle}
+          onChange={e => setWritingStyle(e.target.value)}
+        />
+
+        <label className="label mt-4">Voice samples</label>
         <textarea
           className="input-field"
           rows={8}
-          placeholder="Paste your past posts and comments here. The AI will learn your tone, vocabulary, and style from these examples..."
+          placeholder="Paste your past posts and comments here, or use LinkedIn import above. The AI will learn your tone, vocabulary, and style from these examples..."
           value={voiceSamples}
           onChange={e => setVoiceSamples(e.target.value)}
         />

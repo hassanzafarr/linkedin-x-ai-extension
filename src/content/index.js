@@ -1,6 +1,7 @@
 import { getCurrentPlatform, PLATFORM_CONFIG } from './platform.js';
 import { initFeedScanner, teardownFeedScanner } from './feedScanner.js';
 import { initReplyButtons } from './replyButton.js';
+import { initComposerInjector } from './composerInjector.js';
 
 const platform = getCurrentPlatform();
 
@@ -17,6 +18,7 @@ if (platform) {
 
     if (settings.replyEnabled) {
       initReplyButtons(platform, config);
+      initComposerInjector(platform);
     }
   }).catch(() => {
     // Extension context may not be ready yet on fresh installs — fail silently

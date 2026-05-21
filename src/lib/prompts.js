@@ -1,7 +1,6 @@
 export function buildReplyPrompt({ postText, voiceProfile, platform }) {
-  const voiceSection = voiceProfile?.rawSamples
-    ? `Here are examples of how I write on social media:\n\n${voiceProfile.rawSamples.slice(0, 3000)}`
-    : 'Write in a professional yet personable tone.';
+  const voiceSection = buildVoiceContext(voiceProfile)
+    || 'Write in a professional yet personable tone.';
 
   const platformCtx = platform === 'linkedin'
     ? 'LinkedIn (professional audience, up to 1200 chars per reply)'
@@ -26,14 +25,43 @@ Return ONLY a valid JSON array with exactly 3 strings. No markdown, no explanati
 Example: ["reply one", "reply two", "reply three"]`;
 }
 
+export function buildIntentReplyPrompt({ postText, voiceProfile, platform, intentLabel, intentInstruction, customNote }) {
+  const voiceSection = buildVoiceContext(voiceProfile)
+    || 'Write in a professional yet personable tone.';
+
+  const platformCtx = platform === 'linkedin'
+    ? 'LinkedIn (professional audience, up to 1200 chars)'
+    : 'X/Twitter (under 280 characters, one tweet)';
+
+  const customSection = customNote?.trim()
+    ? `\n## Extra direction from me\n${customNote.trim().slice(0, 500)}\n`
+    : '';
+
+  return `You are a social media ghostwriter helping me reply to a ${platform} post.
+
+${voiceSection}
+
+## Post I want to reply to
+${(postText || '').slice(0, 1500)}
+
+## Reply intent: ${intentLabel}
+${intentInstruction}
+${customSection}
+## Rules
+- Match my voice from the examples above
+- ${platformCtx}
+- Never open with "Great post!", "Absolutely!", "Totally agree", or similar hollow phrases
+- One reply only, ready to post, no preamble or explanation
+
+Return ONLY the reply text. No JSON, no markdown, no quotes around it.`;
+}
+
 export function buildDraftPostPrompt({ topic, platform, tone, voiceProfile }) {
   const charLimit = platform === 'x'
     ? 'Keep it under 280 characters for a single tweet, or structure as a thread (max 5 tweets, each clearly separated by "---", each under 280 chars).'
     : 'LinkedIn allows up to 3000 characters. Aim for 150–400 words for best engagement. Use line breaks for readability.';
 
-  const voiceSection = voiceProfile?.rawSamples
-    ? `Here are examples of my writing style:\n\n${voiceProfile.rawSamples.slice(0, 3000)}`
-    : '';
+  const voiceSection = buildVoiceContext(voiceProfile);
 
   return `You are a social media ghostwriter.
 ${voiceSection}
@@ -50,6 +78,49 @@ Rules:
 - ${platform === 'linkedin' ? 'End with a question or call-to-action to drive comments.' : 'Be punchy. Every word earns its place.'}
 - No hashtag spam — maximum 2–3 relevant hashtags only if they add value
 - Return ONLY the post text, nothing else. No markdown formatting, no labels.`;
+}
+
+function buildVoiceContext(voiceProfile) {
+  if (!voiceProfile) return '';
+  const parts = [];
+  if (voiceProfile.story?.trim()) {
+    parts.push(`## About me\n${voiceProfile.story.trim().slice(0, 1500)}`);
+  }
+  if (voiceProfile.writingStyle?.trim()) {
+    parts.push(`## How I write\n${voiceProfile.writingStyle.trim().slice(0, 1500)}`);
+  }
+  if (voiceProfile.rawSamples?.trim()) {
+    parts.push(`## Examples of my writing\n${voiceProfile.rawSamples.slice(0, 3000)}`);
+  }
+  return parts.join('\n\n');
+}
+
+export function buildVoiceExtractionPrompt({ profileText, activityText }) {
+  return `You will be given raw text scraped from a LinkedIn profile page and the user's recent-activity page. Build a writing-voice profile for this user.
+
+## Profile page text
+${(profileText || '').slice(0, 14000)}
+
+## Activity page text
+${(activityText || '').slice(0, 22000)}
+
+## Task
+Produce four things:
+
+1. **name** — user's full name (or empty string if not visible).
+2. **headline** — current professional headline (or empty string).
+3. **story** — a 3-5 sentence first-person summary of what the user works on, builds, and cares about. Based ONLY on the scraped text. Write as the user ("I am…", "I work on…"). Include their role, domain, current focus, and any unique experiences or themes evident from posts. Minimum 30 characters.
+4. **writingStyle** — a 3-6 sentence description of HOW the user writes (tone, sentence length, formality, use of lists/emojis/hashtags, recurring rhetorical moves, vocabulary patterns). Written in third-person about the user's style ("They tend to…", "Posts often…"). Minimum 15 characters. Based on the actual samples — do not invent.
+5. **samples** — 5-10 of the user's own posts/comments that best represent their voice. Strip UI artifacts ("see more", "Like", "Comment", reaction counts, "Activity", "Posts", other users' names, ads, sponsored snippets). Keep only complete first-person writing, each 1-12 sentences.
+
+Return ONLY valid JSON, no markdown, no commentary:
+{
+  "name": "...",
+  "headline": "...",
+  "story": "...",
+  "writingStyle": "...",
+  "samples": ["...", "..."]
+}`;
 }
 
 export function buildScoringPrompt({ postText, platform }) {
