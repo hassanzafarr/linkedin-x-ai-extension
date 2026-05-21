@@ -4,30 +4,45 @@ export async function callClaude(prompt, apiKey) {
   if (!apiKey) throw new Error('NO_API_KEY');
   const cleanKey = apiKey.trim();
 
-  const response = await fetch(CLAUDE_URL, {
-    method: 'POST',
-    headers: {
-      'x-api-key': cleanKey,
-      'anthropic-version': '2023-06-01',
-      'content-type': 'application/json',
-      'anthropic-dangerous-direct-browser-access': 'true',
-    },
-    body: JSON.stringify({
-      model: 'claude-3-5-haiku-20241022',
-      max_tokens: 1024,
-      messages: [{ role: 'user', content: prompt }],
-    }),
-  });
+  console.log('[Claude] Request start. Key prefix:', cleanKey.slice(0, 12), 'length:', cleanKey.length);
 
-  if (response.status === 401 || response.status === 403) throw new Error('INVALID_API_KEY');
-  if (response.status === 429) throw new Error('RATE_LIMIT');
-  if (!response.ok) {
-    const errorBody = await response.text().catch(() => '');
-    console.error('Claude API Error:', response.status, errorBody);
-    throw new Error(`CLAUDE_ERROR_${response.status}`);
+  let response;
+  try {
+    response = await fetch(CLAUDE_URL, {
+      method: 'POST',
+      headers: {
+        'x-api-key': cleanKey,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: 'claude-3-5-haiku-20241022',
+        max_tokens: 1024,
+        messages: [{ role: 'user', content: prompt }],
+      }),
+    });
+  } catch (networkErr) {
+    console.error('[Claude] Network error:', networkErr);
+    throw new Error(`NETWORK_ERROR: ${networkErr.message}`);
   }
 
-  const data = await response.json();
+  const rawBody = await response.text().catch(() => '');
+  console.log('[Claude] Response status:', response.status, 'body:', rawBody);
+
+  if (!response.ok) {
+    let parsed;
+    try { parsed = JSON.parse(rawBody); } catch { parsed = null; }
+    const apiMessage = parsed?.error?.message || rawBody || 'unknown';
+    const apiType = parsed?.error?.type || 'http_error';
+    const err = new Error(`${response.status} ${apiType}: ${apiMessage}`);
+    err.status = response.status;
+    err.apiType = apiType;
+    err.apiMessage = apiMessage;
+    throw err;
+  }
+
+  const data = JSON.parse(rawBody);
   const text = data.content[0].text;
   return extractJSON(text);
 }

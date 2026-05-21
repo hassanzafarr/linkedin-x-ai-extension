@@ -68,6 +68,13 @@ async function testApiKey(apiKey) {
     await callClaude('Return the JSON: {"ok": true}', apiKey);
     return { ok: true };
   } catch (err) {
-    return { ok: false, error: err.message };
+    console.error('[TEST_API_KEY] failed:', err);
+    return {
+      ok: false,
+      error: err.message,
+      status: err.status,
+      apiType: err.apiType,
+      apiMessage: err.apiMessage,
+    };
   }
 }

@@ -10,6 +10,7 @@ export default function Options() {
   const [defaultTone, setDefaultTone] = useState('professional');
 
   const [testStatus, setTestStatus] = useState('idle'); // idle | testing | ok | error
+  const [testError, setTestError] = useState('');
   const [saveStatus, setSaveStatus] = useState('idle'); // idle | saving | saved
 
   useEffect(() => {
@@ -25,9 +26,16 @@ export default function Options() {
 
   async function testConnection() {
     setTestStatus('testing');
-    const result = await chrome.runtime.sendMessage({ type: 'TEST_API_KEY', apiKey: apiKey.trim() });
+    setTestError('');
+    const trimmed = apiKey.trim();
+    console.log('[Options] Testing key. Prefix:', trimmed.slice(0, 12), 'length:', trimmed.length);
+    const result = await chrome.runtime.sendMessage({ type: 'TEST_API_KEY', apiKey: trimmed });
+    console.log('[Options] Test result:', result);
     setTestStatus(result.ok ? 'ok' : 'error');
-    setTimeout(() => setTestStatus('idle'), 3000);
+    if (!result.ok) {
+      setTestError(result.error || 'Unknown error');
+    }
+    setTimeout(() => setTestStatus('idle'), 8000);
   }
 
   async function handleSave() {
@@ -79,6 +87,11 @@ export default function Options() {
             console.anthropic.com
           </a>
         </p>
+        {testError && (
+          <pre className="text-xs text-red-400 mt-2 whitespace-pre-wrap break-all bg-red-950/30 border border-red-900/50 rounded p-2">
+            {testError}
+          </pre>
+        )}
       </div>
 
       {/* Voice Profile */}
