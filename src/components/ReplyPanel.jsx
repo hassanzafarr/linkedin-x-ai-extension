@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import ReplyCard from './ReplyCard.jsx';
+import { safeSendMessage, ExtensionInvalidatedError } from '../lib/messaging.js';
 
 export default function ReplyPanel({ postText, platform, onClose }) {
   const [state, setState] = useState('loading');
@@ -14,7 +15,7 @@ export default function ReplyPanel({ postText, platform, onClose }) {
     setState('loading');
     setError('');
     try {
-      const result = await chrome.runtime.sendMessage({
+      const result = await safeSendMessage({
         type: 'GENERATE_REPLY',
         postText,
         platform,
@@ -27,10 +28,14 @@ export default function ReplyPanel({ postText, platform, onClose }) {
       setSuggestions(result.suggestions);
       setState('loaded');
     } catch (err) {
-      const msg = err.message === 'RATE_LIMIT'
-        ? 'Rate limit hit — wait a moment and retry.'
-        : 'Failed to generate replies. Check your API key in settings.';
-      setError(msg);
+      if (err instanceof ExtensionInvalidatedError) {
+        setError('Extension was updated — please refresh the page.');
+      } else {
+        const msg = err.message === 'RATE_LIMIT'
+          ? 'Rate limit hit — wait a moment and retry.'
+          : 'Failed to generate replies. Check your API key in settings.';
+        setError(msg);
+      }
       setState('error');
     }
   }

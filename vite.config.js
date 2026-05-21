@@ -33,12 +33,11 @@ export default defineConfig({
         popup:            resolve(__dirname, 'popup.html'),
         options:          resolve(__dirname, 'options.html'),
         sidepanel:        resolve(__dirname, 'sidepanel.html'),
-        content:          resolve(__dirname, 'src/content/index.js'),
+        // content script is built separately (vite.content.config.js) as IIFE
         'service-worker': resolve(__dirname, 'src/background/service-worker.js'),
       },
       output: {
         entryFileNames: (chunk) => {
-          if (chunk.name === 'content') return 'content.js';
           if (chunk.name === 'service-worker') return 'service-worker.js';
           return 'assets/[name]-[hash].js';
         },

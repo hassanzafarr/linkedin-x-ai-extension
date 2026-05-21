@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { INTENTS } from '../lib/intents.js';
+import { safeSendMessage, ExtensionInvalidatedError } from '../lib/messaging.js';
 
 export default function IntentPicker({ postText, platform, onPick, onClose }) {
   const [activeId, setActiveId] = useState(null);
@@ -7,13 +8,16 @@ export default function IntentPicker({ postText, platform, onPick, onClose }) {
   const [customNote, setCustomNote] = useState('');
   const [error, setError] = useState('');
   const [status, setStatus] = useState('');
+  const [generatedReply, setGeneratedReply] = useState('');
+  const [copied, setCopied] = useState(false);
 
   async function pick(intentId, note) {
     setActiveId(intentId);
     setError('');
     setStatus('Generating…');
+    setGeneratedReply('');
     try {
-      const result = await chrome.runtime.sendMessage({
+      const result = await safeSendMessage({
         type: 'GENERATE_INTENT_REPLY',
         postText,
         platform,
@@ -22,15 +26,59 @@ export default function IntentPicker({ postText, platform, onPick, onClose }) {
       });
       if (result?.error) throw new Error(result.error);
       if (!result?.reply) throw new Error('Empty reply');
-      onPick(result.reply);
+      setGeneratedReply(result.reply);
+      setStatus('');
     } catch (err) {
       console.error('[IntentPicker]', err);
-      setError(err.message || 'Failed');
+      if (err instanceof ExtensionInvalidatedError) {
+        setError('Extension was updated — please refresh the page.');
+      } else {
+        setError(err.message || 'Failed');
+      }
       setStatus('');
       setActiveId(null);
     }
   }
 
+  async function handleCopy() {
+    await navigator.clipboard.writeText(generatedReply);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  function handleInsert() {
+    onPick(generatedReply);
+  }
+
+  function handleRegenerate() {
+    setGeneratedReply('');
+    setCopied(false);
+    setActiveId(null);
+  }
+
+  // ── Result view: show generated reply with Copy / Insert ──
+  if (generatedReply) {
+    return (
+      <div className="panel">
+        <div className="header">
+          <div className="title">EngageFlow AI</div>
+          <div className="header-actions">
+            <button className="icon-btn" onClick={handleRegenerate} title="Try again">↻</button>
+            <button className="close" onClick={onClose} aria-label="Close">×</button>
+          </div>
+        </div>
+        <div className="reply-preview">{generatedReply}</div>
+        <div className="actions-row">
+          <button className={`action-btn ${copied ? 'copied' : 'copy'}`} onClick={handleCopy}>
+            {copied ? '✓ Copied' : 'Copy'}
+          </button>
+          <button className="action-btn insert" onClick={handleInsert}>Insert</button>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Intent picker view ──
   return (
     <div className="panel">
       <div className="header">

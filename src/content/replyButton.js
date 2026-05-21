@@ -25,6 +25,20 @@ function scanAndInject(platform, config) {
     const anchor = post.querySelector(config.replyButtonAnchor);
     if (!anchor) return;
 
+    // Find the best injection container:
+    // On X, the reply button is deeply nested inside wrapper divs with overflow:hidden.
+    // We need to find the [role="group"] action bar and append there.
+    let actionBar;
+    if (platform === 'x') {
+      // The action bar on X uses [role="group"] and contains reply, retweet, like, share, views
+      actionBar = anchor.closest('[role="group"]');
+    }
+    // Fallback: use the anchor's parent
+    if (!actionBar) {
+      actionBar = anchor.parentElement;
+    }
+    if (!actionBar) return;
+
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.setAttribute(TRIGGER_ATTR, 'true');
@@ -33,17 +47,18 @@ function scanAndInject(platform, config) {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 32px;
-      height: 32px;
+      width: 34px;
+      height: 34px;
       border-radius: 9999px;
       border: none;
       background: transparent;
       color: #10b981;
       cursor: pointer;
-      margin-left: 6px;
+      margin: 0 2px;
       padding: 0;
       transition: background 0.15s, transform 0.1s;
       vertical-align: middle;
+      flex-shrink: 0;
     `;
     btn.innerHTML = `
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -72,11 +87,7 @@ function scanAndInject(platform, config) {
       mountReplyPanel(postText, platform, btn);
     });
 
-    // Inject next to the anchor as a sibling instead of inside it
-    if (anchor.parentNode) {
-      anchor.after(btn);
-    } else {
-      anchor.appendChild(btn);
-    }
+    // Append to the action bar container
+    actionBar.appendChild(btn);
   });
 }

@@ -84,9 +84,25 @@ function insertIntoComposer(el, text, platform) {
   if (!el) return;
   el.focus();
 
-  // execCommand insertText works for both Draft.js (X) and Quill (LinkedIn) since it
-  // fires input events the editors listen to. Avoid setting innerText directly,
-  // which both editors ignore for their internal model.
+  // For X: simulate a paste event — this is the most reliable way to trigger
+  // X's internal React/Draft.js state update so the Reply button activates.
+  if (platform === 'x') {
+    try {
+      const dt = new DataTransfer();
+      dt.setData('text/plain', text);
+      const pasteEvent = new ClipboardEvent('paste', {
+        clipboardData: dt,
+        bubbles: true,
+        cancelable: true,
+      });
+      el.dispatchEvent(pasteEvent);
+      return;
+    } catch (e) {
+      // fall through to other methods
+    }
+  }
+
+  // execCommand insertText works for Quill (LinkedIn) and some other editors
   const ok = document.execCommand && document.execCommand('insertText', false, text);
   if (ok) return;
 
@@ -98,12 +114,6 @@ function insertIntoComposer(el, text, platform) {
     cancelable: true,
   });
   el.dispatchEvent(event);
-
-  // Last-resort fallback for X: write into element + fire input
-  if (platform === 'x') {
-    el.innerText = (el.innerText || '') + text;
-    el.dispatchEvent(new Event('input', { bubbles: true }));
-  }
 }
 
 function pickerStyles() {
@@ -125,6 +135,11 @@ function pickerStyles() {
       align-items: center;
       margin-bottom: 10px;
     }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
     .title {
       font-size: 11px;
       font-weight: 600;
@@ -132,7 +147,7 @@ function pickerStyles() {
       text-transform: uppercase;
       color: #a1a1aa;
     }
-    .close {
+    .close, .icon-btn {
       background: none;
       border: none;
       color: #71717a;
@@ -141,7 +156,7 @@ function pickerStyles() {
       padding: 0 4px;
       transition: color 0.15s;
     }
-    .close:hover { color: #fafafa; }
+    .close:hover, .icon-btn:hover { color: #fafafa; }
     .grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -179,6 +194,54 @@ function pickerStyles() {
       transition: border-color 0.15s;
     }
     .custom-input:focus { border-color: #10b981; }
+
+    /* Reply preview */
+    .reply-preview {
+      background: #18181b;
+      border: 1px solid #27272a;
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 13px;
+      line-height: 1.55;
+      color: #e4e4e7;
+      margin-bottom: 10px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .actions-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+    .action-btn {
+      flex: 1;
+      padding: 7px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: background 0.15s, border-color 0.15s;
+      text-align: center;
+    }
+    .action-btn.copy {
+      background: transparent;
+      color: #e4e4e7;
+      border-color: #3f3f46;
+    }
+    .action-btn.copy:hover { background: #27272a; }
+    .action-btn.copied {
+      background: #022c22;
+      color: #6ee7b7;
+      border-color: #064e3b;
+    }
+    .action-btn.insert {
+      background: #10b981;
+      color: white;
+      border-color: #059669;
+    }
+    .action-btn.insert:hover { background: #059669; }
+
     .status {
       margin-top: 10px;
       font-size: 12px;
@@ -200,3 +263,4 @@ function pickerStyles() {
     @keyframes spin { to { transform: rotate(360deg); } }
   `;
 }
+
