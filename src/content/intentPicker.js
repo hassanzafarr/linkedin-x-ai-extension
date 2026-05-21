@@ -111,13 +111,13 @@ function pickerStyles() {
     *, *::before, *::after { box-sizing: border-box; }
     :host { all: initial; }
     .panel {
-      font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
-      background: #1e1b4b;
-      border: 1px solid #4c1d95;
-      border-radius: 12px;
+      font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+      background: #0a0a0a;
+      border: 1px solid #27272a;
+      border-radius: 10px;
       padding: 12px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-      color: #f1f5f9;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+      color: #fafafa;
     }
     .header {
       display: flex;
@@ -126,39 +126,42 @@ function pickerStyles() {
       margin-bottom: 10px;
     }
     .title {
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 0.05em;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
-      color: #a78bfa;
+      color: #a1a1aa;
     }
     .close {
       background: none;
       border: none;
-      color: #94a3b8;
+      color: #71717a;
       cursor: pointer;
       font-size: 16px;
       padding: 0 4px;
+      transition: color 0.15s;
     }
+    .close:hover { color: #fafafa; }
     .grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 6px;
     }
     .intent {
-      background: #312e81;
-      border: 1px solid #4338ca;
-      border-radius: 8px;
+      background: #18181b;
+      border: 1px solid #27272a;
+      border-radius: 6px;
       padding: 8px 10px;
-      color: #e0e7ff;
+      color: #e4e4e7;
       font-size: 12px;
-      font-weight: 600;
+      font-weight: 500;
       cursor: pointer;
       text-align: center;
-      transition: background 0.12s;
+      transition: background 0.12s, border-color 0.12s;
     }
-    .intent:hover { background: #4338ca; }
-    .intent.selected { background: #16a34a; border-color: #15803d; color: white; }
+    .intent:hover { background: #27272a; border-color: #3f3f46; }
+    .intent.selected { background: #10b981; border-color: #059669; color: white; }
+    .intent:disabled { opacity: 0.5; cursor: not-allowed; }
     .custom-row {
       grid-column: 1 / -1;
       display: flex;
@@ -166,17 +169,20 @@ function pickerStyles() {
     }
     .custom-input {
       flex: 1;
-      background: #0f172a;
-      border: 1px solid #4338ca;
-      border-radius: 8px;
+      background: #18181b;
+      border: 1px solid #27272a;
+      border-radius: 6px;
       padding: 6px 8px;
-      color: #e0e7ff;
+      color: #fafafa;
       font-size: 12px;
+      outline: none;
+      transition: border-color 0.15s;
     }
+    .custom-input:focus { border-color: #10b981; }
     .status {
       margin-top: 10px;
       font-size: 12px;
-      color: #94a3b8;
+      color: #a1a1aa;
       min-height: 16px;
     }
     .status.error { color: #f87171; }
@@ -184,8 +190,8 @@ function pickerStyles() {
       display: inline-block;
       width: 12px;
       height: 12px;
-      border: 2px solid #4c1d95;
-      border-top-color: #a78bfa;
+      border: 2px solid #27272a;
+      border-top-color: #10b981;
       border-radius: 50%;
       animation: spin 0.7s linear infinite;
       margin-right: 6px;

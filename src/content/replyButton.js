@@ -34,23 +34,23 @@ function injectTriggerButton(post, platform, config) {
     align-items: center;
     gap: 4px;
     padding: 6px 12px;
-    background: #7c3aed;
+    background: #10b981;
     color: white;
     border: none;
-    border-radius: 20px;
+    border-radius: 6px;
     font-size: 12px;
-    font-weight: 600;
+    font-weight: 500;
     cursor: pointer;
-    font-family: system-ui, sans-serif;
+    font-family: 'Inter', system-ui, sans-serif;
     margin-left: 8px;
     transition: background 0.15s;
     white-space: nowrap;
     vertical-align: middle;
   `;
-  btn.innerHTML = '✦ Draft Reply';
+  btn.innerHTML = 'Draft Reply';
 
-  btn.addEventListener('mouseenter', () => { btn.style.background = '#6d28d9'; });
-  btn.addEventListener('mouseleave', () => { btn.style.background = '#7c3aed'; });
+  btn.addEventListener('mouseenter', () => { btn.style.background = '#059669'; });
+  btn.addEventListener('mouseleave', () => { btn.style.background = '#10b981'; });
 
   btn.addEventListener('click', (e) => {
     e.preventDefault();

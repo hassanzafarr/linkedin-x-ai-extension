@@ -20,57 +20,67 @@ export default function Popup() {
   }
 
   return (
-    <div style={{ width: 260, padding: 16 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+    <div style={{
+      width: 280,
+      padding: 18,
+      background: '#0a0a0a',
+      color: '#fafafa',
+      fontFamily: "'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif",
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 18 }}>
         <div style={{
-          width: 28, height: 28, background: '#7c3aed', borderRadius: 8,
+          width: 28, height: 28, background: '#10b981', borderRadius: 6,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 14, color: 'white', fontWeight: 700,
-        }}>D</div>
-        <span style={{ fontWeight: 700, fontSize: 16, color: '#f1f5f9' }}>EngageFlow AI</span>
+          fontSize: 13, color: 'white', fontWeight: 600,
+        }}>E</div>
+        <span style={{ fontWeight: 600, fontSize: 15, color: '#fafafa' }}>EngageFlow AI</span>
       </div>
 
       {hasKey === false && (
         <div style={{
-          background: '#4c1d95', border: '1px solid #6d28d9', borderRadius: 8,
-          padding: '8px 12px', marginBottom: 12, fontSize: 12, color: '#c4b5fd',
+          background: '#18181b', border: '1px solid #27272a', borderRadius: 6,
+          padding: '10px 12px', marginBottom: 12, fontSize: 12, color: '#a1a1aa',
         }}>
-          ⚠ Set your Claude API key to activate AI features.
+          Set your Claude API key to activate AI features.
         </div>
       )}
 
       {hasKey === true && (
         <div style={{
-          background: '#064e3b', border: '1px solid #065f46', borderRadius: 8,
-          padding: '8px 12px', marginBottom: 12, fontSize: 12, color: '#6ee7b7',
+          background: '#022c22', border: '1px solid #064e3b', borderRadius: 6,
+          padding: '10px 12px', marginBottom: 12, fontSize: 12, color: '#6ee7b7',
         }}>
-          ✓ API key active
+          API key active
         </div>
       )}
 
       <button
         onClick={openSidePanel}
         style={{
-          width: '100%', padding: '9px 0', background: '#7c3aed', color: 'white',
-          border: 'none', borderRadius: 8, fontWeight: 600, fontSize: 13,
-          cursor: 'pointer', marginBottom: 8,
+          width: '100%', padding: '10px 0', background: '#10b981', color: 'white',
+          border: 'none', borderRadius: 6, fontWeight: 500, fontSize: 13,
+          cursor: 'pointer', marginBottom: 8, transition: 'background 0.15s',
         }}
+        onMouseEnter={e => e.currentTarget.style.background = '#059669'}
+        onMouseLeave={e => e.currentTarget.style.background = '#10b981'}
       >
-        ✦ Open Draft Panel
+        Open Draft Panel
       </button>
 
       <button
         onClick={openOptions}
         style={{
-          width: '100%', padding: '9px 0', background: '#1e1b4b', color: '#a78bfa',
-          border: '1px solid #4c1d95', borderRadius: 8, fontWeight: 600, fontSize: 13,
-          cursor: 'pointer',
+          width: '100%', padding: '10px 0', background: '#18181b', color: '#e4e4e7',
+          border: '1px solid #27272a', borderRadius: 6, fontWeight: 500, fontSize: 13,
+          cursor: 'pointer', transition: 'background 0.15s',
         }}
+        onMouseEnter={e => e.currentTarget.style.background = '#27272a'}
+        onMouseLeave={e => e.currentTarget.style.background = '#18181b'}
       >
-        ⚙ Settings
+        Settings
       </button>
 
-      <div style={{ marginTop: 12, fontSize: 11, color: '#475569', textAlign: 'center' }}>
+      <div style={{ marginTop: 14, fontSize: 11, color: '#52525b', textAlign: 'center', lineHeight: 1.5 }}>
         Hover posts on LinkedIn or X to draft replies
       </div>
     </div>

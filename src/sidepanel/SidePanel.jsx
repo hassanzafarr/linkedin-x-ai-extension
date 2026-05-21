@@ -18,9 +18,9 @@ export default function SidePanel() {
   return (
     <div className="min-h-screen p-4 flex flex-col">
       {/* Header */}
-      <div className="flex items-center gap-2 mb-5">
-        <div className="w-7 h-7 bg-violet-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">D</div>
-        <span className="font-bold text-slate-100">Draft a Post</span>
+      <div className="flex items-center gap-2 mb-6">
+        <div className="w-7 h-7 bg-emerald-600 rounded-md flex items-center justify-center text-white font-semibold text-sm">E</div>
+        <span className="font-semibold text-zinc-100">Draft a Post</span>
       </div>
 
       {/* Platform */}
@@ -31,10 +31,10 @@ export default function SidePanel() {
             <button
               key={p}
               onClick={() => setPlatform(p)}
-              className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-colors ${
+              className={`flex-1 py-2 rounded-md text-sm font-medium transition-colors ${
                 platform === p
-                  ? 'bg-violet-600 text-white'
-                  : 'bg-indigo-950 text-slate-400 border border-indigo-800 hover:border-violet-600'
+                  ? 'bg-emerald-600 text-white'
+                  : 'bg-zinc-900 text-zinc-400 border border-zinc-800 hover:border-zinc-700 hover:text-zinc-200'
               }`}
             >
               {p === 'linkedin' ? 'LinkedIn' : 'X / Twitter'}
@@ -51,10 +51,10 @@ export default function SidePanel() {
             <button
               key={t}
               onClick={() => setTone(t)}
-              className={`py-2 rounded-lg text-sm font-semibold capitalize transition-colors ${
+              className={`py-2 rounded-md text-sm font-medium capitalize transition-colors ${
                 tone === t
-                  ? 'bg-violet-600 text-white'
-                  : 'bg-indigo-950 text-slate-400 border border-indigo-800 hover:border-violet-600'
+                  ? 'bg-emerald-600 text-white'
+                  : 'bg-zinc-900 text-zinc-400 border border-zinc-800 hover:border-zinc-700 hover:text-zinc-200'
               }`}
             >
               {t}
@@ -78,7 +78,7 @@ export default function SidePanel() {
           onChange={e => setTopic(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handleGenerate(); }}
         />
-        <p className="text-xs text-slate-500 mt-1">Cmd/Ctrl+Enter to generate</p>
+        <p className="text-xs text-zinc-500 mt-1">Cmd/Ctrl+Enter to generate</p>
       </div>
 
       <button
@@ -88,17 +88,17 @@ export default function SidePanel() {
       >
         {loading ? (
           <span className="flex items-center justify-center gap-2">
-            <span className="inline-block w-4 h-4 border-2 border-violet-300 border-t-white rounded-full animate-spin" />
+            <span className="inline-block w-4 h-4 border-2 border-emerald-200/60 border-t-white rounded-full animate-spin" />
             Drafting in your voice…
           </span>
-        ) : '✦ Generate Post'}
+        ) : 'Generate Post'}
       </button>
 
       {error === 'NO_API_KEY' && (
         <div className="card text-center">
-          <p className="text-sm text-slate-400 mb-2">No API key set.</p>
+          <p className="text-sm text-zinc-400 mb-2">No API key set.</p>
           <button
-            className="text-violet-400 text-sm hover:underline"
+            className="text-emerald-400 text-sm hover:text-emerald-300 hover:underline"
             onClick={() => chrome.runtime.openOptionsPage()}
           >
             Open Settings →
@@ -107,7 +107,7 @@ export default function SidePanel() {
       )}
 
       {error && error !== 'NO_API_KEY' && (
-        <div className="card border-red-900">
+        <div className="card border-red-900/50 bg-red-950/20">
           <p className="text-sm text-red-400">
             {error === 'RATE_LIMIT'
               ? 'Rate limit hit — wait a moment and retry.'

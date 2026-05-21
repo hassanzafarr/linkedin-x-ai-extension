@@ -117,10 +117,10 @@ export default function Options() {
   return (
     <div className="max-w-2xl mx-auto px-6 py-8">
       <div className="flex items-center gap-3 mb-8">
-        <div className="w-9 h-9 bg-violet-600 rounded-xl flex items-center justify-center text-white font-bold text-lg">D</div>
+        <div className="w-9 h-9 bg-emerald-600 rounded-md flex items-center justify-center text-white font-semibold text-base">E</div>
         <div>
-          <h1 className="text-xl font-bold text-slate-100">EngageFlow AI Settings</h1>
-          <p className="text-xs text-slate-400">AI for LinkedIn &amp; X</p>
+          <h1 className="text-lg font-semibold text-zinc-100">EngageFlow AI Settings</h1>
+          <p className="text-xs text-zinc-500">AI for LinkedIn &amp; X</p>
         </div>
       </div>
 
@@ -137,16 +137,16 @@ export default function Options() {
             onBlur={persistApiKeyOnBlur}
           />
           <button
-            className="btn-secondary whitespace-nowrap px-4 py-2 rounded-lg text-sm font-semibold"
+            className="btn-secondary whitespace-nowrap px-4 py-2 rounded-md text-sm"
             onClick={testConnection}
             disabled={!apiKey || testStatus === 'testing'}
           >
             {testStatus === 'testing' ? '…' : testStatus === 'ok' ? '✓ OK' : testStatus === 'error' ? '✕ Failed' : 'Test'}
           </button>
         </div>
-        <p className="text-xs text-slate-500 mt-2">
+        <p className="text-xs text-zinc-500 mt-2">
           Get an API key at{' '}
-          <a className="text-violet-400 hover:underline" href="https://console.anthropic.com/" target="_blank" rel="noreferrer">
+          <a className="text-emerald-400 hover:text-emerald-300 hover:underline" href="https://console.anthropic.com/" target="_blank" rel="noreferrer">
             console.anthropic.com
           </a>
         </p>
@@ -172,18 +172,18 @@ export default function Options() {
             disabled={importStatus === 'running'}
           />
           <button
-            className="btn-secondary whitespace-nowrap px-4 py-2 rounded-lg text-sm font-semibold"
+            className="btn-secondary whitespace-nowrap px-4 py-2 rounded-md text-sm"
             onClick={importFromLinkedIn}
             disabled={!profileUrl || importStatus === 'running' || !apiKey}
           >
             {importStatus === 'running' ? '…' : importStatus === 'ok' ? '✓ Imported' : 'Import'}
           </button>
         </div>
-        <p className="text-xs text-slate-500 mt-2">
+        <p className="text-xs text-zinc-500 mt-2">
           Make sure you are logged in to LinkedIn in this Chrome. We open your profile in a background tab, scroll it, and analyze visible text. Takes ~30–45s.
         </p>
         {importStatus === 'running' && (
-          <p className="text-xs text-violet-300 mt-2">{importStage}</p>
+          <p className="text-xs text-emerald-400 mt-2">{importStage}</p>
         )}
         {importStatus === 'ok' && importSummary && (
           <p className="text-xs text-emerald-400 mt-2">
@@ -199,7 +199,7 @@ export default function Options() {
         )}
 
         <label className="label mt-4">Your story in a few sentences</label>
-        <p className="text-xs text-slate-500 mb-1">What you work on and care about. Auto-filled from LinkedIn import — edit if needed.</p>
+        <p className="text-xs text-zinc-500 mb-1">What you work on and care about. Auto-filled from LinkedIn import — edit if needed.</p>
         <textarea
           className="input-field"
           rows={4}
@@ -209,7 +209,7 @@ export default function Options() {
         />
 
         <label className="label mt-4">Writing style</label>
-        <p className="text-xs text-slate-500 mb-1">How you write — tone, sentence length, recurring patterns. Auto-filled from import.</p>
+        <p className="text-xs text-zinc-500 mb-1">How you write — tone, sentence length, recurring patterns. Auto-filled from import.</p>
         <textarea
           className="input-field"
           rows={4}
@@ -226,7 +226,7 @@ export default function Options() {
           value={voiceSamples}
           onChange={e => setVoiceSamples(e.target.value)}
         />
-        <p className={`text-xs mt-1 ${sampleBytes > 40000 ? 'text-amber-400' : 'text-slate-500'}`}>
+        <p className={`text-xs mt-1 ${sampleBytes > 40000 ? 'text-amber-400' : 'text-zinc-500'}`}>
           {sampleKB} KB used {sampleBytes > 40000 && '— consider trimming to keep quality high'}
         </p>
       </div>
@@ -237,12 +237,12 @@ export default function Options() {
         <div className="space-y-4">
           <label className="flex items-center justify-between">
             <div>
-              <div className="text-sm text-slate-200 font-medium">Feed Scanner</div>
-              <div className="text-xs text-slate-500">Highlight high-value posts in your feed</div>
+              <div className="text-sm text-zinc-100 font-medium">Feed Scanner</div>
+              <div className="text-xs text-zinc-500">Highlight high-value posts in your feed</div>
             </div>
             <input
               type="checkbox"
-              className="w-4 h-4 accent-violet-500"
+              className="w-4 h-4 accent-emerald-500"
               checked={feedEnabled}
               onChange={e => setFeedEnabled(e.target.checked)}
             />
@@ -253,11 +253,11 @@ export default function Options() {
               <label className="label">Score threshold: {threshold}</label>
               <input
                 type="range" min="30" max="90" step="5"
-                className="w-full accent-violet-500"
+                className="w-full accent-emerald-500"
                 value={threshold}
                 onChange={e => setThreshold(Number(e.target.value))}
               />
-              <div className="flex justify-between text-xs text-slate-500 mt-1">
+              <div className="flex justify-between text-xs text-zinc-500 mt-1">
                 <span>Show more</span><span>Show less</span>
               </div>
             </div>
@@ -265,12 +265,12 @@ export default function Options() {
 
           <label className="flex items-center justify-between">
             <div>
-              <div className="text-sm text-slate-200 font-medium">Reply Suggestions</div>
-              <div className="text-xs text-slate-500">Show "Draft Reply" button on posts</div>
+              <div className="text-sm text-zinc-100 font-medium">Reply Suggestions</div>
+              <div className="text-xs text-zinc-500">Show "Draft Reply" button on posts</div>
             </div>
             <input
               type="checkbox"
-              className="w-4 h-4 accent-violet-500"
+              className="w-4 h-4 accent-emerald-500"
               checked={replyEnabled}
               onChange={e => setReplyEnabled(e.target.checked)}
             />

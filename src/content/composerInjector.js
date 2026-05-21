@@ -105,7 +105,7 @@ function makeIconButton(getContext) {
     border-radius: 9999px;
     border: none;
     background: transparent;
-    color: #7c3aed;
+    color: #10b981;
     cursor: pointer;
     margin: 0 2px;
     padding: 0;
@@ -118,7 +118,7 @@ function makeIconButton(getContext) {
       <circle cx="5"  cy="20" r="1.2" fill="currentColor"/>
     </svg>
   `;
-  btn.addEventListener('mouseenter', () => { btn.style.background = 'rgba(124,58,237,0.12)'; });
+  btn.addEventListener('mouseenter', () => { btn.style.background = 'rgba(16,185,129,0.12)'; });
   btn.addEventListener('mouseleave', () => { btn.style.background = 'transparent'; });
   btn.addEventListener('click', (e) => {
     e.preventDefault();

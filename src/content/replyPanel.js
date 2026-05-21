@@ -81,23 +81,21 @@ export function unmountReplyPanel() {
 }
 
 function getShadowStyles() {
-  // Minimal reset + utility classes used by the panel
-  // Full Tailwind reset is intentionally excluded to avoid page style conflicts
   return `
     *, *::before, *::after { box-sizing: border-box; }
     :host { all: initial; }
     #draftly-panel-root {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       font-size: 14px;
       line-height: 1.5;
-      color: #f1f5f9;
+      color: #fafafa;
     }
     .panel {
-      background: #1e1b4b;
-      border: 1px solid #4c1d95;
-      border-radius: 12px;
-      padding: 16px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      background: #0a0a0a;
+      border: 1px solid #27272a;
+      border-radius: 10px;
+      padding: 14px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.6);
       width: 380px;
     }
     .panel-header {
@@ -107,25 +105,26 @@ function getShadowStyles() {
       margin-bottom: 12px;
     }
     .panel-title {
-      font-size: 13px;
+      font-size: 11px;
       font-weight: 600;
-      color: #a78bfa;
-      letter-spacing: 0.05em;
+      color: #a1a1aa;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
     }
     .close-btn {
       background: none;
       border: none;
-      color: #94a3b8;
+      color: #71717a;
       cursor: pointer;
-      font-size: 18px;
+      font-size: 16px;
       padding: 0 4px;
       line-height: 1;
+      transition: color 0.15s;
     }
-    .close-btn:hover { color: #f1f5f9; }
+    .close-btn:hover { color: #fafafa; }
     .loading {
       text-align: center;
-      color: #94a3b8;
+      color: #a1a1aa;
       padding: 24px 0;
       font-size: 13px;
     }
@@ -135,17 +134,17 @@ function getShadowStyles() {
       padding: 12px 0;
     }
     .reply-card {
-      background: #2e1065;
-      border: 1px solid #6d28d9;
+      background: #18181b;
+      border: 1px solid #27272a;
       border-radius: 8px;
       padding: 12px;
       margin-bottom: 8px;
     }
     .reply-text {
       font-size: 13px;
-      color: #e2e8f0;
-      margin-bottom: 8px;
-      line-height: 1.5;
+      color: #e4e4e7;
+      margin-bottom: 10px;
+      line-height: 1.55;
     }
     .reply-actions {
       display: flex;
@@ -156,30 +155,33 @@ function getShadowStyles() {
       padding: 6px 10px;
       border-radius: 6px;
       font-size: 12px;
-      font-weight: 600;
+      font-weight: 500;
       cursor: pointer;
-      border: none;
-      transition: opacity 0.15s;
+      border: 1px solid transparent;
+      transition: background 0.15s, border-color 0.15s;
     }
-    .btn:hover { opacity: 0.85; }
     .btn-copy {
-      background: #3730a3;
-      color: #c4b5fd;
+      background: transparent;
+      color: #e4e4e7;
+      border-color: #27272a;
     }
+    .btn-copy:hover { background: #27272a; }
     .btn-insert {
-      background: #7c3aed;
+      background: #10b981;
       color: white;
     }
+    .btn-insert:hover { background: #059669; }
     .btn-copied {
-      background: #065f46;
+      background: #022c22;
       color: #6ee7b7;
+      border-color: #064e3b;
     }
     .spinner {
       display: inline-block;
-      width: 16px;
-      height: 16px;
-      border: 2px solid #4c1d95;
-      border-top-color: #8b5cf6;
+      width: 14px;
+      height: 14px;
+      border: 2px solid #27272a;
+      border-top-color: #10b981;
       border-radius: 50%;
       animation: spin 0.7s linear infinite;
       margin-right: 8px;
@@ -188,13 +190,15 @@ function getShadowStyles() {
     @keyframes spin { to { transform: rotate(360deg); } }
     .no-key-msg {
       font-size: 12px;
-      color: #94a3b8;
+      color: #a1a1aa;
       text-align: center;
       padding: 8px 0;
     }
     .no-key-msg a {
-      color: #a78bfa;
+      color: #34d399;
       cursor: pointer;
+      text-decoration: none;
     }
+    .no-key-msg a:hover { text-decoration: underline; }
   `;
 }
