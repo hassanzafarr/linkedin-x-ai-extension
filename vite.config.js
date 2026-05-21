@@ -1,9 +1,28 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { resolve } from 'path';
+import { copyFileSync, mkdirSync, readdirSync } from 'fs';
+
+function copyExtensionAssets() {
+  return {
+    name: 'copy-extension-assets',
+    closeBundle() {
+      const outDir = resolve(__dirname, 'dist');
+      const iconsOutDir = resolve(outDir, 'icons');
+
+      mkdirSync(iconsOutDir, { recursive: true });
+      copyFileSync(resolve(__dirname, 'manifest.json'), resolve(outDir, 'manifest.json'));
+      copyFileSync(resolve(__dirname, 'src/content/contentStyles.css'), resolve(outDir, 'content.css'));
+
+      for (const icon of readdirSync(resolve(__dirname, 'icons'))) {
+        copyFileSync(resolve(__dirname, 'icons', icon), resolve(iconsOutDir, icon));
+      }
+    },
+  };
+}
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), copyExtensionAssets()],
   build: {
     outDir: 'dist',
     emptyOutDir: true,
