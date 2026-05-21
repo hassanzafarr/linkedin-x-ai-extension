@@ -1,14 +1,15 @@
 import { mountIntentPicker, unmountIntentPicker } from './intentPicker.js';
 
 const BTN_ATTR = 'data-engageflow-composer-btn';
+const LOG = (...args) => console.log('[EngageFlow injector]', ...args);
 
 export function initComposerInjector(platform) {
+  LOG('init for', platform);
   const scan = () => scanAndInject(platform);
   scan();
   const observer = new MutationObserver(() => {
-    // debounce a touch
     clearTimeout(observer._t);
-    observer._t = setTimeout(scan, 250);
+    observer._t = setTimeout(scan, 200);
   });
   observer.observe(document.body, { childList: true, subtree: true });
 }
@@ -22,18 +23,28 @@ function scanAndInject(platform) {
 }
 
 function injectX() {
-  // X composer: any toolbar with [data-testid="toolBar"]. The textarea is `tweetTextarea_0..n`.
-  const toolbars = document.querySelectorAll('[data-testid="toolBar"]');
-  toolbars.forEach(toolbar => {
+  // Strategy: find every tweetTextarea_*. For each one, walk up to find the
+  // nearest toolbar (supporting both case variations and role="toolbar").
+  // Append our icon at the start of that toolbar.
+  const textareas = document.querySelectorAll('[data-testid^="tweetTextarea_"]');
+
+  textareas.forEach(textArea => {
+    // Walk up parents to find the nearest toolbar belonging to this composer
+    let cur = textArea.parentElement;
+    let toolbar = null;
+    while (cur && cur !== document.body) {
+      toolbar = cur.querySelector('[data-testid="toolBar"], [data-testid="toolbar"], [role="toolbar"]');
+      if (toolbar) break;
+      cur = cur.parentElement;
+    }
+
+    if (!toolbar) {
+      LOG('no toolbar found near textarea', textArea);
+      return;
+    }
     if (toolbar.querySelector(`[${BTN_ATTR}]`)) return;
 
-    const composerContainer = toolbar.closest('[data-testid="primaryColumn"]') || toolbar.parentElement?.parentElement;
-    const textArea = composerContainer?.querySelector('[data-testid^="tweetTextarea_"]') || document.querySelector('[data-testid^="tweetTextarea_"]');
-    if (!textArea) return;
-
-    const article = toolbar.closest('article[data-testid="tweet"]')
-      || findNearestArticle(toolbar);
-
+    const article = findNearestArticle(textArea);
     const getContext = () => ({
       composerEl: textArea,
       postText: extractPostText(article, 'x'),
@@ -41,9 +52,9 @@ function injectX() {
     });
 
     const btn = makeIconButton(getContext);
-    // Insert as first child of inner toolbar group
-    const group = toolbar.querySelector('[role="group"], div') || toolbar;
-    group.insertBefore(btn, group.firstChild);
+    // Prepend so we appear before native icons (matches Teract behavior)
+    toolbar.insertBefore(btn, toolbar.firstChild);
+    LOG('injected X composer button into toolbar', toolbar);
   });
 }
 

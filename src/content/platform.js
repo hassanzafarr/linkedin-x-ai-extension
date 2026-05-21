@@ -1,10 +1,10 @@
 // Selectors verified 2026-05-21 — update this date when re-verified after LinkedIn/X DOM changes
 export const PLATFORM_CONFIG = {
   linkedin: {
-    feedPostSelector: 'div.feed-shared-update-v2, div[data-id]',
-    postTextSelector: '.feed-shared-update-v2__description, .update-components-text',
-    engagementSelector: '.social-details-social-counts__reactions-count, .social-details-social-counts',
-    replyButtonAnchor: '.feed-shared-social-action-bar, .social-actions-button',
+    feedPostSelector: 'div.feed-shared-update-v2, div[data-id], .comments-comment-item, .comments-comments-list__comment-item',
+    postTextSelector: '.feed-shared-update-v2__description, .update-components-text, .comments-comment-item__comment-body, .comments-comment-item-content-body',
+    engagementSelector: '.social-details-social-counts__reactions-count, .social-details-social-counts, .comments-comment-social-bar',
+    replyButtonAnchor: '.feed-shared-social-action-bar, .social-actions-button, .comments-comment-social-bar, button.comment-reply-action',
     composeBoxSelector: '.ql-editor[contenteditable="true"], div[role="textbox"][contenteditable="true"]',
   },
   x: {

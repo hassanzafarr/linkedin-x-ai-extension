@@ -28,29 +28,41 @@ function injectTriggerButton(post, platform, config) {
   if (!anchor) return;
 
   const btn = document.createElement('button');
+  btn.type = 'button';
   btn.setAttribute(TRIGGER_ATTR, 'true');
+  btn.title = 'EngageFlow AI Reply';
   btn.style.cssText = `
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    padding: 6px 12px;
-    background: #10b981;
-    color: white;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 9999px;
     border: none;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 500;
+    background: transparent;
+    color: #10b981;
     cursor: pointer;
-    font-family: 'Inter', system-ui, sans-serif;
-    margin-left: 8px;
-    transition: background 0.15s;
-    white-space: nowrap;
+    margin-left: 6px;
+    padding: 0;
+    transition: background 0.15s, transform 0.1s;
     vertical-align: middle;
   `;
-  btn.innerHTML = 'Draft Reply';
+  btn.innerHTML = `
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 2 L13.5 8.5 L20 10 L13.5 11.5 L12 18 L10.5 11.5 L4 10 L10.5 8.5 Z"/>
+      <circle cx="19" cy="4" r="1.2" fill="currentColor"/>
+      <circle cx="5"  cy="20" r="1.2" fill="currentColor"/>
+    </svg>
+  `;
 
-  btn.addEventListener('mouseenter', () => { btn.style.background = '#059669'; });
-  btn.addEventListener('mouseleave', () => { btn.style.background = '#10b981'; });
+  btn.addEventListener('mouseenter', () => { 
+    btn.style.background = 'rgba(16, 185, 129, 0.12)'; 
+    btn.style.transform = 'scale(1.08)';
+  });
+  btn.addEventListener('mouseleave', () => { 
+    btn.style.background = 'transparent'; 
+    btn.style.transform = 'scale(1)';
+  });
 
   btn.addEventListener('click', (e) => {
     e.preventDefault();
@@ -62,15 +74,10 @@ function injectTriggerButton(post, platform, config) {
     mountReplyPanel(postText, platform, btn);
   });
 
-  // Clean up button when post node leaves the DOM
-  const cleanupObserver = new MutationObserver(() => {
-    if (!document.contains(post)) {
-      btn.remove();
-      unmountReplyPanel();
-      cleanupObserver.disconnect();
-    }
-  });
-  cleanupObserver.observe(document.body, { childList: true, subtree: true });
-
-  anchor.appendChild(btn);
+  // Inject next to the anchor as a sibling instead of inside it
+  if (anchor.parentNode) {
+    anchor.after(btn);
+  } else {
+    anchor.appendChild(btn);
+  }
 }
