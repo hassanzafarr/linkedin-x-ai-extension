@@ -5,20 +5,21 @@ export const saveVoiceProfile = (data) =>
   chrome.storage.local.set({ voiceProfile: data });
 
 export const getApiKey = () =>
-  chrome.storage.sync.get('geminiApiKey').then(r => r.geminiApiKey ?? '');
+  chrome.storage.sync.get(['claudeApiKey', 'geminiApiKey']).then(r => r.claudeApiKey || r.geminiApiKey || '');
 
 export const saveApiKey = (key) =>
-  chrome.storage.sync.set({ geminiApiKey: key });
+  chrome.storage.sync.set({ claudeApiKey: key });
 
 export const getSettings = () =>
   chrome.storage.sync.get([
+    'claudeApiKey',
     'geminiApiKey',
     'feedScannerEnabled',
     'feedScannerThreshold',
     'replyEnabled',
     'defaultTone',
   ]).then(r => ({
-    geminiApiKey: r.geminiApiKey ?? '',
+    claudeApiKey: r.claudeApiKey || r.geminiApiKey || '',
     feedScannerEnabled: r.feedScannerEnabled ?? true,
     feedScannerThreshold: r.feedScannerThreshold ?? 60,
     replyEnabled: r.replyEnabled ?? true,

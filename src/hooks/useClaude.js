@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-export function useGemini(messageType) {
+export function useClaude(messageType) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [result, setResult] = useState(null);

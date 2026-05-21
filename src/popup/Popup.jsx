@@ -23,16 +23,16 @@ export default function Popup() {
     <div className="w-[260px] p-4">
       <div className="flex items-center gap-2 mb-4">
         <div className="w-7 h-7 bg-violet-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">D</div>
-        <span className="font-bold text-base text-slate-100">Draftly</span>
+        <span className="font-bold text-base text-slate-100">EngageFlow AI</span>
       </div>
 
       {hasKey === null && (
-        <div className="card mb-3 h-8 animate-pulse" />
+        <div className="bg-indigo-950 border border-indigo-800 rounded-lg mb-3 h-9 animate-pulse" />
       )}
 
       {hasKey === false && (
         <div className="bg-violet-900 border border-violet-700 rounded-lg px-3 py-2 mb-3 text-xs text-violet-300">
-          ⚠ Set your Gemini API key to activate AI features.
+          ⚠ Set your Claude API key to activate AI features.
         </div>
       )}
 
@@ -46,7 +46,7 @@ export default function Popup() {
         ✦ Open Draft Panel
       </button>
 
-      <button onClick={openOptions} className="btn-secondary w-full py-2.5 text-sm border border-solid border-indigo-800">
+      <button onClick={openOptions} className="btn-secondary-outlined w-full py-2.5 text-sm">
         ⚙ Settings
       </button>
 

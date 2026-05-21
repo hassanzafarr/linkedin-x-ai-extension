@@ -1,4 +1,4 @@
-import { callGemini } from '../lib/gemini.js';
+import { callClaude } from '../lib/claude.js';
 import { buildReplyPrompt, buildDraftPostPrompt, buildScoringPrompt } from '../lib/prompts.js';
 import { getApiKey, getSettings, saveSettings, getVoiceProfile, saveVoiceProfile } from '../lib/storage.js';
 
@@ -24,7 +24,7 @@ async function handleMessage(msg) {
 async function generateReply({ postText, platform }) {
   const [apiKey, voiceProfile] = await Promise.all([getApiKey(), getVoiceProfile()]);
   const prompt = buildReplyPrompt({ postText, voiceProfile, platform });
-  const raw = await callGemini(prompt, apiKey);
+  const raw = await callClaude(prompt, apiKey);
   const suggestions = JSON.parse(raw);
   if (!Array.isArray(suggestions)) throw new Error('PARSE_ERROR');
   return { suggestions };
@@ -33,7 +33,7 @@ async function generateReply({ postText, platform }) {
 async function draftPost({ topic, platform, tone }) {
   const [apiKey, voiceProfile] = await Promise.all([getApiKey(), getVoiceProfile()]);
   const prompt = buildDraftPostPrompt({ topic, platform, tone, voiceProfile });
-  const raw = await callGemini(prompt, apiKey);
+  const raw = await callClaude(prompt, apiKey);
   // draft prompt returns plain text, not JSON
   const draft = typeof raw === 'string' ? raw.replace(/^"|"$/g, '').trim() : raw;
   return { draft };
@@ -46,7 +46,7 @@ async function scorePost({ postText, platform }) {
     return { score: 50, reasons: ['Heuristic score — set API key for AI scoring'] };
   }
   const prompt = buildScoringPrompt({ postText, platform });
-  const raw = await callGemini(prompt, apiKey);
+  const raw = await callClaude(prompt, apiKey);
   return JSON.parse(raw);
 }
 
@@ -65,7 +65,7 @@ async function persistSettings({ settings, voiceProfile }) {
 
 async function testApiKey(apiKey) {
   try {
-    await callGemini('Return the JSON: {"ok": true}', apiKey);
+    await callClaude('Return the JSON: {"ok": true}', apiKey);
     return { ok: true };
   } catch (err) {
     return { ok: false, error: err.message };

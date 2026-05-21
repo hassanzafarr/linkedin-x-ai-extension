@@ -38,7 +38,7 @@ export default function ReplyPanel({ postText, platform, onClose }) {
   return (
     <div className="panel">
       <div className="panel-header">
-        <span className="panel-title">✦ Draftly Replies</span>
+        <span className="panel-title">✦ EngageFlow AI Replies</span>
         <button className="close-btn" onClick={onClose} title="Close">✕</button>
       </div>
 
@@ -51,7 +51,7 @@ export default function ReplyPanel({ postText, platform, onClose }) {
 
       {state === 'no-key' && (
         <div className="no-key-msg">
-          No Gemini API key set.{' '}
+          No Claude API key set.{' '}
           <a onClick={() => chrome.runtime.openOptionsPage()}>Open Settings</a>
         </div>
       )}

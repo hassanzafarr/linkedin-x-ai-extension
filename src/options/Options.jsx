@@ -49,19 +49,19 @@ export default function Options() {
       <div className="flex items-center gap-3 mb-8">
         <div className="w-9 h-9 bg-violet-600 rounded-xl flex items-center justify-center text-white font-bold text-lg">D</div>
         <div>
-          <h1 className="text-xl font-bold text-slate-100">Draftly Settings</h1>
+          <h1 className="text-xl font-bold text-slate-100">EngageFlow AI Settings</h1>
           <p className="text-xs text-slate-400">AI for LinkedIn &amp; X</p>
         </div>
       </div>
 
       {/* API Key */}
       <div className="card mb-5">
-        <div className="section-title">Gemini API Key</div>
+        <div className="section-title">Claude API Key</div>
         <div className="flex gap-2">
           <input
             type="password"
             className="input-field"
-            placeholder="AIza..."
+            placeholder="sk-ant-..."
             value={apiKey}
             onChange={e => setApiKey(e.target.value)}
           />
@@ -74,9 +74,9 @@ export default function Options() {
           </button>
         </div>
         <p className="text-xs text-slate-500 mt-2">
-          Get a free key at{' '}
-          <a className="text-violet-400 hover:underline" href="https://aistudio.google.com/app/apikey" target="_blank" rel="noreferrer">
-            aistudio.google.com
+          Get an API key at{' '}
+          <a className="text-violet-400 hover:underline" href="https://console.anthropic.com/" target="_blank" rel="noreferrer">
+            console.anthropic.com
           </a>
         </p>
       </div>
