@@ -52,10 +52,19 @@ export default function Options() {
     const result = await chrome.runtime.sendMessage({ type: 'TEST_API_KEY', apiKey: trimmed });
     console.log('[Options] Test result:', result);
     setTestStatus(result.ok ? 'ok' : 'error');
-    if (!result.ok) {
+    if (result.ok) {
+      // Persist immediately so refresh doesn't drop the key.
+      saveApiKey(trimmed).catch(err => console.error('[Options] saveApiKey failed:', err));
+    } else {
       setTestError(result.error || 'Unknown error');
     }
     setTimeout(() => setTestStatus('idle'), 8000);
+  }
+
+  function persistApiKeyOnBlur() {
+    const trimmed = apiKey.trim();
+    if (!trimmed) return;
+    saveApiKey(trimmed).catch(err => console.error('[Options] saveApiKey failed:', err));
   }
 
   async function importFromLinkedIn() {
@@ -125,6 +134,7 @@ export default function Options() {
             placeholder="sk-ant-..."
             value={apiKey}
             onChange={e => setApiKey(e.target.value)}
+            onBlur={persistApiKeyOnBlur}
           />
           <button
             className="btn-secondary whitespace-nowrap px-4 py-2 rounded-lg text-sm font-semibold"

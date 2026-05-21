@@ -49,8 +49,18 @@ function normalizeProfileUrl(url) {
   }
 }
 
-function waitForTabComplete(tabId, timeoutMs = 30000) {
-  return new Promise((resolve, reject) => {
+async function waitForTabComplete(tabId, timeoutMs = 60000) {
+  // Check current status — listener may miss `complete` if it already fired.
+  try {
+    const tab = await chrome.tabs.get(tabId);
+    if (tab.status === 'complete') {
+      await waitForReadyState(tabId, timeoutMs);
+      return;
+    }
+  } catch {}
+
+  // Wait for `complete` event, falling back to readyState poll.
+  await new Promise((resolve, reject) => {
     const timer = setTimeout(() => {
       chrome.tabs.onUpdated.removeListener(listener);
       reject(new Error('TAB_LOAD_TIMEOUT'));
@@ -60,11 +70,38 @@ function waitForTabComplete(tabId, timeoutMs = 30000) {
       if (id === tabId && info.status === 'complete') {
         clearTimeout(timer);
         chrome.tabs.onUpdated.removeListener(listener);
-        setTimeout(resolve, 1800);
+        resolve();
       }
     }
     chrome.tabs.onUpdated.addListener(listener);
   });
+
+  await waitForReadyState(tabId, timeoutMs);
+}
+
+async function waitForReadyState(tabId, timeoutMs) {
+  const start = Date.now();
+  while (Date.now() - start < timeoutMs) {
+    try {
+      const [res] = await chrome.scripting.executeScript({
+        target: { tabId },
+        func: () => ({
+          ready: document.readyState,
+          hasMain: !!document.querySelector('main'),
+          url: location.href,
+        }),
+      });
+      const r = res?.result;
+      if (r?.ready === 'complete' && r.hasMain) {
+        await new Promise(rr => setTimeout(rr, 1200));
+        return;
+      }
+    } catch {
+      // tab may be navigating; retry
+    }
+    await new Promise(r => setTimeout(r, 500));
+  }
+  throw new Error('TAB_READYSTATE_TIMEOUT');
 }
 
 async function runInTab(tabId, func) {
