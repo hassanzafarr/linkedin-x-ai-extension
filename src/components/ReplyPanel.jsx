@@ -51,7 +51,7 @@ export default function ReplyPanel({ postText, platform, onClose }) {
 
       {state === 'no-key' && (
         <div className="no-key-msg">
-          No Gemini API key set.{' '}
+          No Claude API key set.{' '}
           <a onClick={() => chrome.runtime.openOptionsPage()}>Open Settings</a>
         </div>
       )}

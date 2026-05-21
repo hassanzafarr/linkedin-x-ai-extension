@@ -35,7 +35,7 @@ export default function Popup() {
           background: '#4c1d95', border: '1px solid #6d28d9', borderRadius: 8,
           padding: '8px 12px', marginBottom: 12, fontSize: 12, color: '#c4b5fd',
         }}>
-          ⚠ Set your Gemini API key to activate AI features.
+          ⚠ Set your Claude API key to activate AI features.
         </div>
       )}
 

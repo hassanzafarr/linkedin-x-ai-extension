@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useGemini } from '../hooks/useGemini.js';
+import { useClaude } from '../hooks/useClaude.js';
 import DraftEditor from '../components/DraftEditor.jsx';
 
 const TONES = ['professional', 'casual', 'witty', 'thoughtful'];
@@ -8,7 +8,7 @@ export default function SidePanel() {
   const [platform, setPlatform] = useState('linkedin');
   const [tone, setTone] = useState('professional');
   const [topic, setTopic] = useState('');
-  const { generate, loading, error, result } = useGemini('DRAFT_POST');
+  const { generate, loading, error, result } = useClaude('DRAFT_POST');
 
   async function handleGenerate() {
     if (!topic.trim()) return;
