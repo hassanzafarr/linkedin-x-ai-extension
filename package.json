@@ -1,6 +1,6 @@
 {
   "type": "module",
-  "name": "draftly-extension",
+  "name": "engageflow-extension",
   "version": "1.0.0",
   "description": "AI reply suggestions, feed scoring, and post drafting for LinkedIn and X",
   "private": true,

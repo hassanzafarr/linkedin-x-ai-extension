@@ -27,7 +27,7 @@ export default function Popup() {
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 14, color: 'white', fontWeight: 700,
         }}>D</div>
-        <span style={{ fontWeight: 700, fontSize: 16, color: '#f1f5f9' }}>Draftly</span>
+        <span style={{ fontWeight: 700, fontSize: 16, color: '#f1f5f9' }}>EngageFlow AI</span>
       </div>
 
       {hasKey === false && (

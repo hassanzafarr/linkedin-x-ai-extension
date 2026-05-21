@@ -49,7 +49,7 @@ export default function Options() {
       <div className="flex items-center gap-3 mb-8">
         <div className="w-9 h-9 bg-violet-600 rounded-xl flex items-center justify-center text-white font-bold text-lg">D</div>
         <div>
-          <h1 className="text-xl font-bold text-slate-100">Draftly Settings</h1>
+          <h1 className="text-xl font-bold text-slate-100">EngageFlow AI Settings</h1>
           <p className="text-xs text-slate-400">AI for LinkedIn &amp; X</p>
         </div>
       </div>

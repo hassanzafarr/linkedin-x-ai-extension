@@ -38,7 +38,7 @@ export default function ReplyPanel({ postText, platform, onClose }) {
   return (
     <div className="panel">
       <div className="panel-header">
-        <span className="panel-title">✦ Draftly Replies</span>
+        <span className="panel-title">✦ EngageFlow AI Replies</span>
         <button className="close-btn" onClick={onClose} title="Close">✕</button>
       </div>
 
