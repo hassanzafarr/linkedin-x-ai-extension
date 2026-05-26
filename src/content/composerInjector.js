@@ -49,6 +49,18 @@ function injectX() {
   }
 
   targets.forEach(textArea => {
+    // ── Skip non-reply composers ──
+    // Only inject our button when there's a tweet being replied to.
+    // The main "What's happening?" compose box and the /compose/post modal
+    // have no tweet text nearby — skip those.
+    const dialog = textArea.closest('[role="dialog"]');
+    const container = dialog || textArea.closest('[role="main"]') || document.body;
+    const hasTweetContext = !!container.querySelector('[data-testid="tweetText"]');
+    if (!hasTweetContext) {
+      LOG('skipping non-reply composer (no tweet context)', textArea);
+      return;
+    }
+
     // Walk up parents to find the nearest toolbar belonging to this composer
     let cur = textArea.parentElement;
     let toolbar = null;

@@ -30,13 +30,30 @@ body {
   }
 
   /* DraftEditor */
-  .draft-editor { @apply flex flex-col gap-2; }
+  .draft-editor { @apply flex flex-col; }
   .draft-textarea {
-    @apply w-full bg-zinc-900 border border-zinc-800 rounded-md px-3 py-2 text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 resize-y text-sm transition-colors;
+    @apply w-full bg-zinc-900 border border-zinc-800 rounded-md px-3 py-2 text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 resize-y text-sm leading-relaxed transition-colors min-h-[240px];
   }
   .draft-footer { @apply flex items-center justify-between; }
   .char-count { @apply text-xs text-zinc-500; }
   .char-count.over-limit { @apply text-red-400; }
   .draft-actions { @apply flex gap-2; }
   .btn-copied { @apply bg-emerald-700 text-emerald-100 font-medium py-2 px-4 rounded-md text-sm cursor-pointer border-none; }
+}
+
+/* Custom scrollbar for sidepanel */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: #0a0a0a; }
+::-webkit-scrollbar-thumb { background: #27272a; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
+
+/* Date/time picker styling */
+input[type="date"],
+input[type="time"] {
+  color-scheme: dark;
+}
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.7);
+  cursor: pointer;
 }

@@ -17,15 +17,26 @@ ${postText.slice(0, 1500)}
 Generate exactly 3 reply options. Each reply must:
 - Match my writing voice from the examples above
 - Be appropriate for ${platformCtx}
-- Add genuine value: an insight, a question, or a specific affirmation — never generic filler
+- Add genuine value: an insight, a question, or a specific affirmation, never generic filler
 - NOT start with "Great post!", "Absolutely!", "I totally agree", or similar hollow openers
+- Always write in a humanized, natural, and conversational way (avoid sounding robotic or like stereotypical AI text)
 - Be ready to post with no editing needed
+- NEVER use em dashes (—), en dashes (–), or double hyphens (--). Use commas, periods, or parentheses instead
 
 Return ONLY a valid JSON array with exactly 3 strings. No markdown, no explanation.
 Example: ["reply one", "reply two", "reply three"]`;
 }
 
-export function buildIntentReplyPrompt({ postText, voiceProfile, platform, intentLabel, intentInstruction, customNote }) {
+export function buildIntentReplyPrompt({
+  postText,
+  voiceProfile,
+  platform,
+  intentLabel,
+  intentInstruction,
+  lengthLabel = 'Medium',
+  lengthInstruction = 'Use a medium length: 2 to 3 concise sentences with enough context to feel thoughtful.',
+  customNote,
+}) {
   const voiceSection = buildVoiceContext(voiceProfile)
     || 'Write in a professional yet personable tone.';
 
@@ -46,22 +57,31 @@ ${(postText || '').slice(0, 1500)}
 
 ## Reply intent: ${intentLabel}
 ${intentInstruction}
+
+## Reply length: ${lengthLabel}
+${lengthInstruction}
 ${customSection}
 ## Rules
 - Match my voice from the examples above
 - ${platformCtx}
+- Strictly follow this length constraint: ${lengthInstruction}. This constraint is a hard requirement and overrides any other instructions (such as intent guidelines).
+- Always write in a humanized, natural, and conversational way (avoid sounding robotic or like stereotypical AI text)
 - Never open with "Great post!", "Absolutely!", "Totally agree", or similar hollow phrases
+- NEVER use em dashes (—), en dashes (–), or double hyphens (--). Use commas, periods, or parentheses instead
 - One reply only, ready to post, no preamble or explanation
 
 Return ONLY the reply text. No JSON, no markdown, no quotes around it.`;
 }
 
-export function buildDraftPostPrompt({ topic, platform, tone, voiceProfile }) {
+export function buildDraftPostPrompt({ topic, platform, tone, voiceProfile, hookPattern }) {
   const charLimit = platform === 'x'
     ? 'Keep it under 280 characters for a single tweet, or structure as a thread (max 5 tweets, each clearly separated by "---", each under 280 chars).'
     : 'LinkedIn allows up to 3000 characters. Aim for 150–400 words for best engagement. Use line breaks for readability.';
 
   const voiceSection = buildVoiceContext(voiceProfile);
+  const hookSection = hookPattern
+    ? `\n## Required opening pattern\nHook style: ${hookPattern.label}.\nPattern: ${hookPattern.instruction}\nExample opener (for inspiration, do not copy verbatim): "${hookPattern.example}"\n`
+    : '';
 
   return `You are a social media ghostwriter.
 ${voiceSection}
@@ -70,14 +90,81 @@ Write a ${platform === 'linkedin' ? 'LinkedIn' : 'X/Twitter'} post about the fol
 
 Topic: ${topic}
 Tone: ${tone}
-
+${hookSection}
 Rules:
 - ${charLimit}
 - Match my writing voice from the examples above
 - Open with a hook that stops the scroll
 - ${platform === 'linkedin' ? 'End with a question or call-to-action to drive comments.' : 'Be punchy. Every word earns its place.'}
-- No hashtag spam — maximum 2–3 relevant hashtags only if they add value
+- Always write in a humanized, natural, and conversational way (avoid sounding robotic or like stereotypical AI text)
+- No hashtag spam. Maximum 2 to 3 relevant hashtags only if they add value
+- NEVER use em dashes (—), en dashes (–), or double hyphens (--). Use commas, periods, or parentheses instead
 - Return ONLY the post text, nothing else. No markdown formatting, no labels.`;
+}
+
+export function buildVariantsPrompt({ topic, platform, tone, voiceProfile, hookPattern }) {
+  const charLimit = platform === 'x'
+    ? 'Each variant: under 280 characters single tweet, OR a thread with tweets separated by "---" (each tweet under 280 chars, max 5 tweets).'
+    : 'Each variant: 150 to 400 words, line breaks for readability, up to 3000 chars.';
+
+  const voiceSection = buildVoiceContext(voiceProfile);
+  const hookSection = hookPattern
+    ? `\n## Required opening pattern (apply to all 3 variants)\n${hookPattern.label}: ${hookPattern.instruction}\n`
+    : '';
+
+  return `You are a social media ghostwriter producing 3 DISTINCT variants of a ${platform === 'linkedin' ? 'LinkedIn' : 'X/Twitter'} post.
+
+${voiceSection}
+
+Topic: ${topic}
+Tone: ${tone}
+${hookSection}
+Variant guidance:
+- Variant 1: lead with a personal story or specific moment.
+- Variant 2: lead with a contrarian or pattern-breaking statement.
+- Variant 3: lead with a concrete number, list, or framework.
+
+Rules for every variant:
+- ${charLimit}
+- Match my writing voice from the examples above
+- Each variant must feel meaningfully different. Different opener, different structure
+- Always write in a humanized, natural, and conversational way (avoid sounding robotic or like stereotypical AI text)
+- No hashtag spam. Maximum 2 to 3 relevant hashtags only if they add value
+- NEVER use em dashes (—), en dashes (–), or double hyphens (--). Use commas, periods, or parentheses instead
+- No hollow phrases ("Great question", "Hot take", "Let me tell you")
+- ${platform === 'linkedin' ? 'End with a question or CTA to drive comments.' : 'Punchy. Every word earns its place.'}
+
+Return ONLY a valid JSON array of exactly 3 strings, where each string is the full post text. No markdown, no commentary.
+Example: ["variant one full text", "variant two full text", "variant three full text"]`;
+}
+
+export function buildRefinePrompt({ currentDraft, refineAction, customInstruction, platform, voiceProfile }) {
+  const platformCtx = platform === 'x'
+    ? 'X/Twitter (under 280 chars per tweet, threads separated by "---")'
+    : 'LinkedIn (up to 3000 chars, line breaks OK)';
+
+  const voiceSection = buildVoiceContext(voiceProfile);
+  const customSection = customInstruction?.trim()
+    ? `\nAdditional instruction: ${customInstruction.trim().slice(0, 300)}`
+    : '';
+
+  return `You are refining an existing ${platform} post draft. Keep the core message but apply the requested change.
+
+${voiceSection}
+
+## Current draft
+${(currentDraft || '').slice(0, 4000)}
+
+## Refinement requested
+${refineAction}${customSection}
+
+Rules:
+- Preserve the core topic and intent
+- Stay in my voice from the examples above
+- Fit ${platformCtx}
+- Always write in a humanized, natural, and conversational way (avoid sounding robotic or like stereotypical AI text)
+- NEVER use em dashes (—), en dashes (–), or double hyphens (--). Use commas, periods, or parentheses instead
+- Return ONLY the refined post text. No preamble, no quotes, no markdown.`;
 }
 
 function buildVoiceContext(voiceProfile) {

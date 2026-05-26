@@ -1,7 +1,30 @@
 import { callClaude } from '../lib/claude.js';
-import { buildReplyPrompt, buildDraftPostPrompt, buildScoringPrompt, buildVoiceExtractionPrompt, buildIntentReplyPrompt } from '../lib/prompts.js';
-import { INTENT_BY_ID } from '../lib/intents.js';
-import { getApiKey, getSettings, saveSettings, getVoiceProfile, saveVoiceProfile } from '../lib/storage.js';
+import {
+  buildReplyPrompt,
+  buildDraftPostPrompt,
+  buildVariantsPrompt,
+  buildRefinePrompt,
+  buildScoringPrompt,
+  buildVoiceExtractionPrompt,
+  buildIntentReplyPrompt,
+} from '../lib/prompts.js';
+import { COMMENT_LENGTH_BY_ID, INTENT_BY_ID } from '../lib/intents.js';
+import { HOOK_BY_ID } from '../lib/hooks.js';
+import {
+  getApiKey,
+  getSettings,
+  saveSettings,
+  getVoiceProfile,
+  saveVoiceProfile,
+  saveDraftToHistory,
+  getDraftHistory,
+  deleteDraftFromHistory,
+  clearDraftHistory,
+  getScheduledPosts,
+  addScheduledPost,
+  updateScheduledPost,
+  deleteScheduledPost,
+} from '../lib/storage.js';
 import { scrapeLinkedInProfile } from '../lib/linkedinScraper.js';
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
@@ -9,10 +32,55 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   return true; // keep channel open for async response
 });
 
+// Reminder alarms for scheduled posts
+const ALARM_PREFIX = 'schedPost_';
+
+async function syncScheduledAlarms() {
+  try {
+    const scheduled = await getScheduledPosts();
+    const existing = await chrome.alarms.getAll();
+    for (const a of existing) {
+      if (a.name.startsWith(ALARM_PREFIX)) await chrome.alarms.clear(a.name);
+    }
+    const now = Date.now();
+    for (const p of scheduled) {
+      if (p.status === 'done' || p.scheduledFor <= now) continue;
+      chrome.alarms.create(`${ALARM_PREFIX}${p.id}`, { when: p.scheduledFor });
+    }
+  } catch (err) {
+    console.warn('[alarms] sync failed:', err);
+  }
+}
+
+chrome.alarms?.onAlarm?.addListener(async (alarm) => {
+  if (!alarm.name.startsWith(ALARM_PREFIX)) return;
+  const id = alarm.name.slice(ALARM_PREFIX.length);
+  const list = await getScheduledPosts();
+  const post = list.find(p => p.id === id);
+  if (!post) return;
+  try {
+    await chrome.notifications.create(`notify_${id}`, {
+      type: 'basic',
+      iconUrl: chrome.runtime.getURL('icons/icon-128.png'),
+      title: `Post reminder: ${post.platform === 'x' ? 'X' : 'LinkedIn'}`,
+      message: post.text.slice(0, 200),
+      priority: 2,
+    });
+  } catch (err) {
+    console.warn('[notifications] failed:', err);
+  }
+  await updateScheduledPost(id, { status: 'notified' });
+});
+
+chrome.runtime.onInstalled.addListener(syncScheduledAlarms);
+chrome.runtime.onStartup.addListener(syncScheduledAlarms);
+
 async function handleMessage(msg, sender) {
   switch (msg.type) {
     case 'GENERATE_REPLY':   return await generateReply(msg);
     case 'DRAFT_POST':       return await draftPost(msg);
+    case 'DRAFT_VARIANTS':   return await draftVariants(msg);
+    case 'REFINE_DRAFT':     return await refineDraft(msg);
     case 'SCORE_POST':       return await scorePost(msg);
     case 'GET_SETTINGS':     return await getAllSettings();
     case 'SAVE_SETTINGS':    return await persistSettings(msg);
@@ -21,6 +89,14 @@ async function handleMessage(msg, sender) {
     case 'TEST_API_KEY':     return await testApiKey(msg.apiKey);
     case 'IMPORT_LINKEDIN':  return await importLinkedIn(msg, sender);
     case 'GENERATE_INTENT_REPLY': return await generateIntentReply(msg);
+    case 'SAVE_DRAFT':       return { entry: await saveDraftToHistory(msg.draft) };
+    case 'LIST_DRAFTS':      return { drafts: await getDraftHistory() };
+    case 'DELETE_DRAFT':     await deleteDraftFromHistory(msg.id); return { ok: true };
+    case 'CLEAR_DRAFTS':     await clearDraftHistory(); return { ok: true };
+    case 'LIST_SCHEDULED':   return { scheduled: await getScheduledPosts() };
+    case 'ADD_SCHEDULED':    { const entry = await addScheduledPost(msg.post); await syncScheduledAlarms(); return { entry }; }
+    case 'UPDATE_SCHEDULED': await updateScheduledPost(msg.id, msg.patch); await syncScheduledAlarms(); return { ok: true };
+    case 'DELETE_SCHEDULED': await deleteScheduledPost(msg.id); await syncScheduledAlarms(); return { ok: true };
     default: throw new Error(`Unknown message type: ${msg.type}`);
   }
 }
@@ -34,12 +110,32 @@ async function generateReply({ postText, platform }) {
   return { suggestions };
 }
 
-async function draftPost({ topic, platform, tone }) {
+async function draftPost({ topic, platform, tone, hookId }) {
   const [apiKey, voiceProfile] = await Promise.all([getApiKey(), getVoiceProfile()]);
-  const prompt = buildDraftPostPrompt({ topic, platform, tone, voiceProfile });
+  const hookPattern = hookId ? HOOK_BY_ID[hookId] : null;
+  const prompt = buildDraftPostPrompt({ topic, platform, tone, voiceProfile, hookPattern });
   const raw = await callClaude(prompt, apiKey);
-  // draft prompt returns plain text, not JSON
   const draft = typeof raw === 'string' ? raw.replace(/^"|"$/g, '').trim() : raw;
+  return { draft };
+}
+
+async function draftVariants({ topic, platform, tone, hookId }) {
+  const [apiKey, voiceProfile] = await Promise.all([getApiKey(), getVoiceProfile()]);
+  const hookPattern = hookId ? HOOK_BY_ID[hookId] : null;
+  const prompt = buildVariantsPrompt({ topic, platform, tone, voiceProfile, hookPattern });
+  const raw = await callClaude(prompt, apiKey, { maxTokens: platform === 'linkedin' ? 4000 : 2000 });
+  let variants;
+  try { variants = JSON.parse(raw); }
+  catch { throw new Error('PARSE_ERROR'); }
+  if (!Array.isArray(variants) || variants.length === 0) throw new Error('PARSE_ERROR');
+  return { variants: variants.slice(0, 3).map(v => String(v).trim()) };
+}
+
+async function refineDraft({ currentDraft, refineAction, customInstruction, platform }) {
+  const [apiKey, voiceProfile] = await Promise.all([getApiKey(), getVoiceProfile()]);
+  const prompt = buildRefinePrompt({ currentDraft, refineAction, customInstruction, platform, voiceProfile });
+  const raw = await callClaude(prompt, apiKey);
+  const draft = typeof raw === 'string' ? raw.replace(/^"|"$/g, '').trim() : String(raw);
   return { draft };
 }
 
@@ -67,11 +163,12 @@ async function persistSettings({ settings, voiceProfile }) {
   return { ok: true };
 }
 
-async function generateIntentReply({ postText, platform, intentId, customNote }) {
+async function generateIntentReply({ postText, platform, intentId, commentLength, customNote }) {
   const [apiKey, voiceProfile] = await Promise.all([getApiKey(), getVoiceProfile()]);
   if (!apiKey) throw new Error('NO_API_KEY');
 
   const intent = INTENT_BY_ID[intentId];
+  const length = COMMENT_LENGTH_BY_ID[commentLength] || COMMENT_LENGTH_BY_ID.medium;
   const intentLabel = intent?.label || 'Custom';
   const intentInstruction = intent?.instruction
     || 'Follow the user-provided direction exactly. Write a single reply that fits the post.';
@@ -82,6 +179,8 @@ async function generateIntentReply({ postText, platform, intentId, customNote })
     platform,
     intentLabel,
     intentInstruction,
+    lengthLabel: length.label,
+    lengthInstruction: length.instruction,
     customNote,
   });
 
@@ -114,13 +213,14 @@ async function importLinkedIn({ profileUrl }, sender) {
 
     emit({ stage: 'analyzing', message: 'Analyzing voice with Claude…' });
     const prompt = buildVoiceExtractionPrompt({ profileText, activityText });
-    const raw = await callClaude(prompt, apiKey);
+    const raw = await callClaude(prompt, apiKey, { maxTokens: 6000 });
 
     let parsed;
     try { parsed = JSON.parse(raw); }
     catch (parseErr) {
       console.error('[IMPORT_LINKEDIN] JSON parse fail:', parseErr, raw);
-      return { ok: false, error: 'PARSE_ERROR: Claude returned non-JSON output.' };
+      const preview = (raw || '').slice(0, 300).replace(/\n/g, ' ');
+      return { ok: false, error: `PARSE_ERROR: Claude returned non-JSON output. First 300 chars: ${preview}` };
     }
 
     const samples = Array.isArray(parsed?.samples) ? parsed.samples : [];

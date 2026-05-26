@@ -48,8 +48,12 @@ export function mountIntentPicker({ anchor, postText, platform, composerEl, onCl
     postText,
     platform,
     onPick: (reply) => {
-      insertIntoComposer(composerEl, reply, platform);
+      // IMPORTANT: unmount the popup FIRST so it stops stealing focus,
+      // then insert text into the composer with a small delay.
       unmountIntentPicker();
+      setTimeout(() => {
+        insertIntoComposer(composerEl, reply, platform);
+      }, 120);
     },
     onClose: () => {
       unmountIntentPicker();
@@ -80,40 +84,141 @@ export function unmountIntentPicker() {
   }
 }
 
-function insertIntoComposer(el, text, platform) {
-  if (!el) return;
-  el.focus();
-
-  // For X: simulate a paste event — this is the most reliable way to trigger
-  // X's internal React/Draft.js state update so the Reply button activates.
-  if (platform === 'x') {
-    try {
-      const dt = new DataTransfer();
-      dt.setData('text/plain', text);
-      const pasteEvent = new ClipboardEvent('paste', {
-        clipboardData: dt,
-        bubbles: true,
-        cancelable: true,
-      });
-      el.dispatchEvent(pasteEvent);
-      return;
-    } catch (e) {
-      // fall through to other methods
-    }
+function findEditorElement(el) {
+  if (!el) return null;
+  // If el is already contenteditable, use it
+  if (el.getAttribute('contenteditable') === 'true') return el;
+  // Look for contenteditable child (X wraps the editor in a testid div)
+  const child = el.querySelector('[contenteditable="true"]');
+  if (child) return child;
+  // Look for contenteditable sibling inside the same form/container
+  const container = el.closest('[role="dialog"]') || el.closest('form') || el.parentElement;
+  if (container) {
+    const editor = container.querySelector('div[role="textbox"][contenteditable="true"]');
+    if (editor) return editor;
   }
+  return el;
+}
 
-  // execCommand insertText works for Quill (LinkedIn) and some other editors
-  const ok = document.execCommand && document.execCommand('insertText', false, text);
-  if (ok) return;
+function findQuillInstance(editor) {
+  if (!editor) return null;
 
-  // Fallback: dispatch InputEvent with data on contenteditable
-  const event = new InputEvent('beforeinput', {
+  try {
+    if (window.Quill?.find) {
+      const found = window.Quill.find(editor);
+      if (found?.insertText) return found;
+    }
+  } catch {}
+
+  let cur = editor;
+  while (cur && cur !== document.body) {
+    if (cur.__quill?.insertText) return cur.__quill;
+    cur = cur.parentElement;
+  }
+  return null;
+}
+
+function selectionIsInside(editor) {
+  const selection = window.getSelection?.();
+  if (!selection || selection.rangeCount === 0) return false;
+  const range = selection.getRangeAt(0);
+  return editor.contains(range.startContainer) && editor.contains(range.endContainer);
+}
+
+function placeCaretAtEnd(editor) {
+  editor.focus();
+  if (selectionIsInside(editor)) return;
+
+  const range = document.createRange();
+  range.selectNodeContents(editor);
+  range.collapse(false);
+
+  const selection = window.getSelection?.();
+  selection?.removeAllRanges();
+  selection?.addRange(range);
+}
+
+function insertWithQuill(editor, text) {
+  const quill = findQuillInstance(editor);
+  if (!quill) return false;
+
+  quill.focus();
+  const range = quill.getSelection(true) || { index: quill.getLength(), length: 0 };
+  if (range.length) quill.deleteText(range.index, range.length, 'user');
+  quill.insertText(range.index, text, 'user');
+  quill.setSelection(range.index + text.length, 0, 'user');
+  return true;
+}
+
+function pastePlainText(editor, text) {
+  try {
+    const before = editor.textContent || '';
+    const dt = new DataTransfer();
+    dt.setData('text/plain', text);
+    const event = new ClipboardEvent('paste', {
+      clipboardData: dt,
+      bubbles: true,
+      cancelable: true,
+      composed: true,
+    });
+    const notCanceled = editor.dispatchEvent(event);
+    const changed = (editor.textContent || '') !== before;
+    return !notCanceled || changed;
+  } catch {
+    return false;
+  }
+}
+
+function execInsertText(editor, text) {
+  placeCaretAtEnd(editor);
+  if (!document.execCommand) return false;
+  const inserted = document.execCommand('insertText', false, text);
+  if (inserted) {
+    editor.dispatchEvent(new InputEvent('input', {
+      inputType: 'insertText',
+      data: text,
+      bubbles: true,
+      composed: true,
+    }));
+  }
+  return inserted;
+}
+
+function beforeInputInsertText(editor, text) {
+  editor.dispatchEvent(new InputEvent('beforeinput', {
     inputType: 'insertText',
     data: text,
     bubbles: true,
     cancelable: true,
-  });
-  el.dispatchEvent(event);
+    composed: true,
+  }));
+}
+
+function insertIntoComposer(el, text, platform) {
+  if (!el) return;
+
+  const editor = findEditorElement(el);
+  if (!editor) return;
+  placeCaretAtEnd(editor);
+
+  if (platform === 'linkedin') {
+    if (insertWithQuill(editor, text)) return;
+    if (pastePlainText(editor, text)) return;
+    if (execInsertText(editor, text)) return;
+    beforeInputInsertText(editor, text);
+    return;
+  }
+
+  if (platform === 'x') {
+    if (pastePlainText(editor, text)) return;
+    if (execInsertText(editor, text)) return;
+    beforeInputInsertText(editor, text);
+    return;
+  }
+
+  if (pastePlainText(editor, text)) return;
+  if (execInsertText(editor, text)) return;
+  beforeInputInsertText(editor, text);
 }
 
 function pickerStyles() {
@@ -162,6 +267,31 @@ function pickerStyles() {
       grid-template-columns: 1fr 1fr;
       gap: 6px;
     }
+    .length-row {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 4px;
+      padding: 3px;
+      border-radius: 7px;
+      background: #18181b;
+      border: 1px solid #27272a;
+    }
+    .length-option {
+      min-width: 0;
+      height: 28px;
+      border: none;
+      border-radius: 5px;
+      background: transparent;
+      color: #a1a1aa;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.12s, color 0.12s;
+    }
+    .length-option:hover { color: #fafafa; }
+    .length-option.selected { background: #27272a; color: #fafafa; }
+    .length-option:disabled { opacity: 0.5; cursor: not-allowed; }
     .intent {
       background: #18181b;
       border: 1px solid #27272a;
@@ -263,4 +393,3 @@ function pickerStyles() {
     @keyframes spin { to { transform: rotate(360deg); } }
   `;
 }
-

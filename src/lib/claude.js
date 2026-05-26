@@ -1,6 +1,6 @@
 const CLAUDE_URL = 'https://api.anthropic.com/v1/messages';
 
-export async function callClaude(prompt, apiKey) {
+export async function callClaude(prompt, apiKey, { maxTokens = 1024 } = {}) {
   if (!apiKey) throw new Error('NO_API_KEY');
   const cleanKey = apiKey.trim();
 
@@ -18,7 +18,7 @@ export async function callClaude(prompt, apiKey) {
       },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
-        max_tokens: 1024,
+        max_tokens: maxTokens,
         messages: [{ role: 'user', content: prompt }],
       }),
     });
@@ -48,12 +48,23 @@ export async function callClaude(prompt, apiKey) {
 }
 
 function extractJSON(text) {
-  const trimmed = text.trim();
-  // If it's wrapped in ```json ... ``` or similar codeblock
+  let s = text.trim();
   const codeBlockRegex = /```(?:json)?\s*([\s\S]*?)\s*```/i;
-  const match = trimmed.match(codeBlockRegex);
-  if (match) {
-    return match[1].trim();
-  }
-  return trimmed;
+  const fence = s.match(codeBlockRegex);
+  if (fence) s = fence[1].trim();
+
+  // Pull first {...} or [...] block out of surrounding prose
+  const firstObj = s.indexOf('{');
+  const firstArr = s.indexOf('[');
+  const start = (firstObj === -1) ? firstArr
+              : (firstArr === -1) ? firstObj
+              : Math.min(firstObj, firstArr);
+  if (start === -1) return s;
+
+  const openChar = s[start];
+  const closeChar = openChar === '{' ? '}' : ']';
+  const lastClose = s.lastIndexOf(closeChar);
+  if (lastClose > start) s = s.slice(start, lastClose + 1);
+
+  return s.trim();
 }

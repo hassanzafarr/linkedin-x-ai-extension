@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { INTENTS } from '../lib/intents.js';
+import { COMMENT_LENGTHS, INTENTS } from '../lib/intents.js';
 import { safeSendMessage, ExtensionInvalidatedError } from '../lib/messaging.js';
 
 export default function IntentPicker({ postText, platform, onPick, onClose }) {
   const [activeId, setActiveId] = useState(null);
+  const [commentLength, setCommentLength] = useState('medium');
   const [customMode, setCustomMode] = useState(false);
   const [customNote, setCustomNote] = useState('');
   const [error, setError] = useState('');
@@ -22,6 +23,7 @@ export default function IntentPicker({ postText, platform, onPick, onClose }) {
         postText,
         platform,
         intentId,
+        commentLength,
         customNote: note || '',
       });
       if (result?.error) throw new Error(result.error);
@@ -87,6 +89,21 @@ export default function IntentPicker({ postText, platform, onPick, onClose }) {
       </div>
 
       <div className="grid">
+        <div className="length-row" role="group" aria-label="Comment length">
+          {COMMENT_LENGTHS.map(option => (
+            <button
+              key={option.id}
+              type="button"
+              className={`length-option ${commentLength === option.id ? 'selected' : ''}`}
+              onClick={() => setCommentLength(option.id)}
+              disabled={!!activeId}
+              title={option.instruction}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+
         {INTENTS.map(intent => (
           <button
             key={intent.id}
