@@ -13,6 +13,7 @@
     "test:ui": "vitest --ui",
     "test:e2e": "playwright test",
     "test:e2e:install": "playwright install chromium",
+    "test:eval": "vitest run tests/unit/eval.test.js",
     "test:all": "npm run test && npm run build && npm run test:e2e"
   },
   "dependencies": {
