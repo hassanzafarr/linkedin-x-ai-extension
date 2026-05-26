@@ -43,10 +43,24 @@ export default function SidePanel() {
   const error = single.error || multi.error;
 
   useEffect(() => {
-    chrome.runtime.sendMessage({ type: 'GET_VOICE' }).then(v => {
-      if (v && (v.story || v.writingStyle || v.rawSamples)) setVoiceStatus('trained');
-      else setVoiceStatus('empty');
-    }).catch(() => setVoiceStatus('empty'));
+    const loadVoice = () => {
+      chrome.runtime.sendMessage({ type: 'GET_VOICE' }).then(v => {
+        if (v && (v.story || v.writingStyle || v.rawSamples)) setVoiceStatus('trained');
+        else setVoiceStatus('empty');
+      }).catch(() => setVoiceStatus('empty'));
+    };
+
+    loadVoice();
+
+    const listener = (changes, area) => {
+      if (area === 'local' && changes.voiceProfile) {
+        const v = changes.voiceProfile.newValue;
+        if (v && (v.story || v.writingStyle || v.rawSamples)) setVoiceStatus('trained');
+        else setVoiceStatus('empty');
+      }
+    };
+    chrome.storage.onChanged.addListener(listener);
+    return () => chrome.storage.onChanged.removeListener(listener);
   }, []);
 
   useEffect(() => {
@@ -115,7 +129,7 @@ export default function SidePanel() {
             onGenerate={handleGenerate}
             onPickVariant={handlePickVariant}
             onRegenerate={handleGenerate}
-            onClearDraft={() => { setChosenDraft(null); setVariants(null); }}
+            onClearDraft={() => { setChosenDraft(null); setVariants(null); setTopic(''); }}
           />
         )}
         {tab === 'history' && (
