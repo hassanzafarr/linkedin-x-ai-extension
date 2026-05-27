@@ -32,20 +32,28 @@ describe('api key', () => {
     expect(await getApiKey()).toBe('');
   });
 
-  it('saves trimmed key under claudeApiKey', async () => {
+  it('saves trimmed key under claudeApiKey in local storage', async () => {
     await saveApiKey('   sk-ant-xyz   ');
-    expect(chrome.storage.sync._store.get('claudeApiKey')).toBe('sk-ant-xyz');
+    expect(chrome.storage.local._store.get('claudeApiKey')).toBe('sk-ant-xyz');
+    expect(chrome.storage.sync._store.get('claudeApiKey')).toBeUndefined();
     expect(await getApiKey()).toBe('sk-ant-xyz');
   });
 
   it('falls back to geminiApiKey if claudeApiKey absent', async () => {
-    await chrome.storage.sync.set({ geminiApiKey: 'gemini-key' });
+    await chrome.storage.local.set({ geminiApiKey: 'gemini-key' });
     expect(await getApiKey()).toBe('gemini-key');
   });
 
   it('prefers claudeApiKey over geminiApiKey', async () => {
-    await chrome.storage.sync.set({ claudeApiKey: 'c', geminiApiKey: 'g' });
+    await chrome.storage.local.set({ claudeApiKey: 'c', geminiApiKey: 'g' });
     expect(await getApiKey()).toBe('c');
+  });
+
+  it('migrates legacy key from sync to local on first read', async () => {
+    await chrome.storage.sync.set({ claudeApiKey: 'legacy-key' });
+    expect(await getApiKey()).toBe('legacy-key');
+    expect(chrome.storage.local._store.get('claudeApiKey')).toBe('legacy-key');
+    expect(chrome.storage.sync._store.get('claudeApiKey')).toBeUndefined();
   });
 });
 

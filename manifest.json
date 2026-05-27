@@ -1,10 +1,9 @@
 {
   "manifest_version": 3,
-  "name": "EngageFlow AI — Social Reply Assistant",
+  "name": "EngageFlow AI — LinkedIn & X Growth Co-pilot",
   "version": "1.0.0",
   "description": "AI reply suggestions, feed scoring, and post drafting in your voice for LinkedIn and X.",
   "author": "EngageFlow AI",
-  "homepage_url": "https://github.com/",
   "minimum_chrome_version": "116",
 
   "permissions": [

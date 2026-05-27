@@ -4,30 +4,62 @@ export const getVoiceProfile = () =>
 export const saveVoiceProfile = (data) =>
   chrome.storage.local.set({ voiceProfile: data });
 
-export const getApiKey = () =>
-  chrome.storage.sync.get(['claudeApiKey', 'geminiApiKey']).then(r => r.claudeApiKey || r.geminiApiKey || '');
+// API key kept in local-only storage so it never syncs across the user's
+// Chrome profile. Migrate any legacy value that was previously stored in
+// chrome.storage.sync on first read.
+const API_KEY_FIELDS = ['claudeApiKey', 'geminiApiKey'];
+
+async function migrateApiKeyFromSync() {
+  try {
+    const synced = await chrome.storage.sync.get(API_KEY_FIELDS);
+    const key = synced.claudeApiKey || synced.geminiApiKey;
+    if (!key) return '';
+    await chrome.storage.local.set({ claudeApiKey: key });
+    await chrome.storage.sync.remove(API_KEY_FIELDS);
+    return key;
+  } catch {
+    return '';
+  }
+}
+
+export const getApiKey = async () => {
+  const local = await chrome.storage.local.get(API_KEY_FIELDS);
+  const key = local.claudeApiKey || local.geminiApiKey;
+  if (key) return key;
+  return migrateApiKeyFromSync();
+};
 
 export const saveApiKey = (key) =>
-  chrome.storage.sync.set({ claudeApiKey: key.trim() });
+  chrome.storage.local.set({ claudeApiKey: key.trim() });
 
-export const getSettings = () =>
-  chrome.storage.sync.get([
-    'claudeApiKey',
-    'geminiApiKey',
-    'feedScannerEnabled',
-    'feedScannerThreshold',
-    'replyEnabled',
-    'defaultTone',
-  ]).then(r => ({
-    claudeApiKey: r.claudeApiKey || r.geminiApiKey || '',
-    feedScannerEnabled: r.feedScannerEnabled ?? true,
-    feedScannerThreshold: r.feedScannerThreshold ?? 60,
-    replyEnabled: r.replyEnabled ?? true,
-    defaultTone: r.defaultTone ?? 'professional',
-  }));
+const SETTINGS_FIELDS = [
+  'feedScannerEnabled',
+  'feedScannerThreshold',
+  'replyEnabled',
+  'defaultTone',
+];
 
-export const saveSettings = (settings) =>
-  chrome.storage.sync.set(settings);
+export const getSettings = async () => {
+  const [settings, claudeApiKey] = await Promise.all([
+    chrome.storage.sync.get(SETTINGS_FIELDS),
+    getApiKey(),
+  ]);
+  return {
+    claudeApiKey,
+    feedScannerEnabled: settings.feedScannerEnabled ?? true,
+    feedScannerThreshold: settings.feedScannerThreshold ?? 60,
+    replyEnabled: settings.replyEnabled ?? true,
+    defaultTone: settings.defaultTone ?? 'professional',
+  };
+};
+
+export const saveSettings = (settings) => {
+  const { claudeApiKey, geminiApiKey, ...rest } = settings;
+  const tasks = [chrome.storage.sync.set(rest)];
+  const key = claudeApiKey ?? geminiApiKey;
+  if (typeof key === 'string') tasks.push(saveApiKey(key));
+  return Promise.all(tasks);
+};
 
 const DRAFTS_KEY = 'draftHistory';
 const SCHEDULED_KEY = 'scheduledPosts';

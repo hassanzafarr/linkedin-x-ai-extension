@@ -28,6 +28,14 @@ import {
 import { scrapeLinkedInProfile } from '../lib/linkedinScraper.js';
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  // Only accept messages from our own extension surfaces (popup, sidepanel,
+  // options, content scripts). External pages cannot reach here today because
+  // no `externally_connectable` is declared, but enforce explicitly for
+  // defense in depth.
+  if (sender?.id !== chrome.runtime.id) {
+    sendResponse({ error: 'UNAUTHORIZED_SENDER' });
+    return false;
+  }
   handleMessage(msg, sender).then(sendResponse).catch(err => sendResponse({ error: err.message }));
   return true; // keep channel open for async response
 });
@@ -218,7 +226,6 @@ async function importLinkedIn({ profileUrl }, sender) {
     let parsed;
     try { parsed = JSON.parse(raw); }
     catch (parseErr) {
-      console.error('[IMPORT_LINKEDIN] JSON parse fail:', parseErr, raw);
       const preview = (raw || '').slice(0, 300).replace(/\n/g, ' ');
       return { ok: false, error: `PARSE_ERROR: Claude returned non-JSON output. First 300 chars: ${preview}` };
     }

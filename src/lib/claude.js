@@ -4,8 +4,6 @@ export async function callClaude(prompt, apiKey, { maxTokens = 1024 } = {}) {
   if (!apiKey) throw new Error('NO_API_KEY');
   const cleanKey = apiKey.trim();
 
-  console.log('[Claude] Request start. Key prefix:', cleanKey.slice(0, 12), 'length:', cleanKey.length);
-
   let response;
   try {
     response = await fetch(CLAUDE_URL, {
@@ -23,12 +21,10 @@ export async function callClaude(prompt, apiKey, { maxTokens = 1024 } = {}) {
       }),
     });
   } catch (networkErr) {
-    console.error('[Claude] Network error:', networkErr);
     throw new Error(`NETWORK_ERROR: ${networkErr.message}`);
   }
 
   const rawBody = await response.text().catch(() => '');
-  console.log('[Claude] Response status:', response.status, 'body:', rawBody);
 
   if (!response.ok) {
     let parsed;

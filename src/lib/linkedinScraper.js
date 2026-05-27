@@ -36,13 +36,16 @@ function report(cb, stage, message) {
   if (typeof cb === 'function') cb({ stage, message });
 }
 
+const LINKEDIN_HOSTS = new Set(['linkedin.com', 'www.linkedin.com']);
+
 function normalizeProfileUrl(url) {
   try {
     const u = new URL(url.trim());
-    if (!u.hostname.endsWith('linkedin.com')) return null;
+    if (u.protocol !== 'https:') return null;
+    if (!LINKEDIN_HOSTS.has(u.hostname)) return null;
     if (!u.pathname.startsWith('/in/')) return null;
     const slug = u.pathname.replace(/^\/in\//, '').replace(/\/.*$/, '');
-    if (!slug) return null;
+    if (!slug || !/^[A-Za-z0-9\-_%.]+$/.test(slug)) return null;
     return `https://www.linkedin.com/in/${slug}`;
   } catch {
     return null;

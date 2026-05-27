@@ -1,10 +1,8 @@
 import { mountIntentPicker, unmountIntentPicker } from './intentPicker.js';
 
 const BTN_ATTR = 'data-engageflow-composer-btn';
-const LOG = (...args) => console.log('[EngageFlow injector]', ...args);
 
 export function initComposerInjector(platform) {
-  LOG('init for', platform);
   const scan = () => scanAndInject(platform);
   scan();
   const observer = new MutationObserver(() => {
@@ -57,7 +55,6 @@ function injectX() {
     const container = dialog || textArea.closest('[role="main"]') || document.body;
     const hasTweetContext = !!container.querySelector('[data-testid="tweetText"]');
     if (!hasTweetContext) {
-      LOG('skipping non-reply composer (no tweet context)', textArea);
       return;
     }
 
@@ -90,7 +87,6 @@ function injectX() {
     }
 
     if (!toolbar) {
-      LOG('no toolbar found near textarea', textArea);
       return;
     }
     if (toolbar.querySelector(`[${BTN_ATTR}]`)) return;
@@ -104,7 +100,6 @@ function injectX() {
     const btn = makeIconButton(getContext);
     // Prepend so we appear before native icons (matches Teract behavior)
     toolbar.insertBefore(btn, toolbar.firstChild);
-    LOG('injected X composer button into toolbar', toolbar);
   });
 }
 
