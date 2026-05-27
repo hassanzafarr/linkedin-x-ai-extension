@@ -3,7 +3,29 @@
     "allow": [
       "Bash(npm run *)",
       "Bash(npm test *)",
-      "Bash(npx playwright *)"
+      "Bash(npx playwright *)",
+      "Bash(Get-ChildItem -Path \"x:\\\\linkedin-x-ai-extension\" -Recurse -Force)",
+      "Bash(Select-Object FullName)",
+      "Read(//x//**)",
+      "Bash(package)",
+      "Bash(vite)",
+      "Bash(README)",
+      "Bash(\\\\.env\")",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(Sort-Object)",
+      "Read(//x/Users/HP/.claude/projects/x--linkedin-x-ai-extension/memory/**)",
+      "Bash(ls \"X:\\\\Users\\\\HP\\\\.claude\\\\projects\\\\x--linkedin-x-ai-extension\\\\memory\\\\\" 2>&1 || echo \"DIRECTORY_NOT_FOUND\")",
+      "Read(//x/Users/HP/.claude/projects/x--linkedin-x-ai-extension/**)",
+      "Bash(ls /mnt/x/Users/HP/.claude/projects/x--linkedin-x-ai-extension/memory/ 2>&1 || echo \"DIRECTORY_NOT_FOUND\")",
+      "Read(//mnt/x/Users/HP/.claude/projects/x--linkedin-x-ai-extension/**)",
+      "Bash(gh api *)",
+      "PowerShell(gh api repos/hassanzafarr/linkedin-x-ai-extension/pages 2>&1)",
+      "WebFetch(domain:hassanzafarr.github.io)",
+      "WebFetch(domain:habittforge.me)",
+      "WebFetch(domain:github.com)"
+    ],
+    "additionalDirectories": [
+      "X:\\Users\\HP\\.claude\\projects\\x--linkedin-x-ai-extension"
     ]
   }
 }

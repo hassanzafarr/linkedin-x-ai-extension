@@ -11,10 +11,10 @@
 
 ## Phase 2: Build + Quality ✅
 
-- [x] Unit tests green — 75 pass, 3 skip
-- [x] E2E tests green — 6/6 (Playwright)
-- [x] `npm run build` clean, no warnings
-- [x] `dist/` size 532 KB total (well under 5 MB)
+- [x] Unit tests green — 75 pass, 3 skip (verified 2026-05-27)
+- [x] E2E tests green — 6/6 (Playwright) (verified 2026-05-27)
+- [x] `npm run build` clean, no warnings (verified 2026-05-27)
+- [x] `dist/` size ~414 KB total (well under 5 MB) (verified 2026-05-27)
 - [x] No `.map` files in `dist/` (sourcemaps off by default in Vite prod)
 - [x] lucide-react named imports — tree-shaken by Vite ESM bundling
 - [ ] **Manual cross-browser QA** — Chrome stable, Edge, Brave (track in QA matrix below)
@@ -29,26 +29,35 @@
 
 ## Phase 3: Functional QA
 
-- [ ] LinkedIn — reply, composer, scrape profile all paths
-- [ ] X/Twitter — reply, composer paths
-- [ ] Side panel — compose, history, calendar, schedule modal
-- [ ] Intent picker — every intent variant
-- [ ] Hook library / refine panel / variant tabs
-- [ ] Thread builder
-- [ ] Error states — invalid API key, 429 rate limit, network fail, Anthropic 5xx
-- [ ] Logout / key rotation flow
-- [ ] DOM selectors resilient — LinkedIn/X change layout often
+> Code review + bug fixes completed 2026-05-27. 3 bugs fixed (see below). Manual live testing still required.
 
-## Phase 4: Privacy + Legal
+**Bugs fixed (2026-05-27):**
+- `callClaude` — 429 response now throws `Error('RATE_LIMIT')` so UI `error === 'RATE_LIMIT'` check works ([src/lib/claude.js](src/lib/claude.js))
+- `generateReply` — `JSON.parse` now wrapped in try/catch → throws clean `PARSE_ERROR` ([src/background/service-worker.js](src/background/service-worker.js))
+- `scorePost` — same `JSON.parse` fix ([src/background/service-worker.js](src/background/service-worker.js))
 
-- [ ] **Privacy Policy** published (required by Chrome Web Store) — what data collected, sent where (Anthropic API), retention
-- [ ] **Terms of Service** page
-- [ ] Disclose scraping behavior in store listing
-- [ ] Review LinkedIn ToS — automated scraping risk for users
-- [ ] Review X ToS
-- [ ] Anthropic usage policy compliance (no abuse, no PII bulk processing)
-- [ ] GDPR — data export/delete if EU users
-- [ ] Cookie/tracking disclosure if analytics added
+- [ ] LinkedIn — reply, composer, scrape profile all paths *(manual test required)*
+- [ ] X/Twitter — reply, composer paths *(manual test required)*
+- [ ] Side panel — compose, history, calendar, schedule modal *(manual test required)*
+- [ ] Intent picker — every intent variant *(manual test required)*
+- [ ] Hook library / refine panel / variant tabs *(manual test required)*
+- [ ] Thread builder *(manual test required)*
+- [x] Error states — `NO_API_KEY` (sidepanel shows settings link), `RATE_LIMIT` (fixed), `PARSE_ERROR` (fixed), network fail (`NETWORK_ERROR` propagates), Anthropic 5xx (propagates as `5xx http_error: ...`)
+- [ ] Logout / key rotation flow *(manual test required)*
+- [ ] DOM selectors resilient — last verified 2026-05-21; re-verify before submit
+
+## Phase 4: Privacy + Legal ✅
+
+- [x] **Privacy Policy** published — `legal/privacy-policy.html`, hosted at `https://hassanzafarr.github.io/linkedin-x-ai-extension/legal/privacy-policy.html` (GitHub Pages, main branch)
+- [x] **Terms of Service** page — `legal/terms-of-service.html`, same host; includes explicit LinkedIn/X ToS compliance warning
+- [x] Scraping disclosure in store listing — `STORE_LISTING.md` "Data disclosure" paragraph, per CWS policy
+- [x] LinkedIn ToS review — documented in `LEGAL_COMPLIANCE.md`; risk MODERATE, mitigated (user-initiated, own feed/profile, no backend)
+- [x] X ToS review — documented in `LEGAL_COMPLIANCE.md`; risk LOW–MODERATE, mitigated (DOM read, user-triggered, not bot)
+- [x] Anthropic usage policy compliance — documented in `LEGAL_COMPLIANCE.md`; COMPLIANT, no violations
+- [x] GDPR — Export My Data (JSON, API key redacted) + Delete All My Data in Options → Privacy & Data card
+- [x] Cookie/tracking disclosure — no cookies, no analytics; confirmed in Privacy Policy §10
+
+> **Note (2026-05-27):** All files currently reference `https://habittforge.me/linkedin-x-ai-extension/...` (GitHub CDN cache from deleted user-site repo still active). Once CDN cache clears (~1–2h after deletion), update all 6 files to `https://hassanzafarr.github.io/linkedin-x-ai-extension/...` and push. Files: `legal/privacy-policy.html`, `legal/terms-of-service.html`, `manifest.json`, `src/options/Options.jsx`, `STORE_LISTING.md`, `LEGAL_COMPLIANCE.md`.
 
 ## Phase 5: Store Listing
 
@@ -91,8 +100,10 @@
 
 ## Critical Blockers (must fix before submit)
 
-1. Privacy policy URL live
-2. Real `homepage_url` in manifest
-3. API key UX — bring-your-own vs proxy decision
-4. Permission justifications written
-5. LinkedIn/X ToS legal review
+1. ~~Privacy policy URL live~~ ✅ — `https://hassanzafarr.github.io/linkedin-x-ai-extension/legal/privacy-policy.html` (pending CDN cache clear)
+2. ~~Real `homepage_url` in manifest~~ ✅ — set to privacy policy URL
+3. **API key UX** — bring-your-own model confirmed for v1 (no proxy)
+4. ~~Permission justifications written~~ ✅ — `STORE_LISTING.md`
+5. ~~LinkedIn/X ToS legal review~~ ✅ — `LEGAL_COMPLIANCE.md`
+6. **Paste Privacy Policy URL** in Chrome Web Store developer dashboard — do after CDN cache clears
+7. **Manual cross-browser QA** (Phase 2 matrix) — still pending

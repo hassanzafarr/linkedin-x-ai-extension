@@ -31,6 +31,8 @@ export async function callClaude(prompt, apiKey, { maxTokens = 1024 } = {}) {
     try { parsed = JSON.parse(rawBody); } catch { parsed = null; }
     const apiMessage = parsed?.error?.message || rawBody || 'unknown';
     const apiType = parsed?.error?.type || 'http_error';
+    // Normalize 429 so UI can match it with a simple string check
+    if (response.status === 429) throw new Error('RATE_LIMIT');
     const err = new Error(`${response.status} ${apiType}: ${apiMessage}`);
     err.status = response.status;
     err.apiType = apiType;

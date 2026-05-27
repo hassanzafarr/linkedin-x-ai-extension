@@ -113,7 +113,8 @@ async function generateReply({ postText, platform }) {
   const [apiKey, voiceProfile] = await Promise.all([getApiKey(), getVoiceProfile()]);
   const prompt = buildReplyPrompt({ postText, voiceProfile, platform });
   const raw = await callClaude(prompt, apiKey);
-  const suggestions = JSON.parse(raw);
+  let suggestions;
+  try { suggestions = JSON.parse(raw); } catch { throw new Error('PARSE_ERROR'); }
   if (!Array.isArray(suggestions)) throw new Error('PARSE_ERROR');
   return { suggestions };
 }
@@ -155,7 +156,7 @@ async function scorePost({ postText, platform }) {
   }
   const prompt = buildScoringPrompt({ postText, platform });
   const raw = await callClaude(prompt, apiKey);
-  return JSON.parse(raw);
+  try { return JSON.parse(raw); } catch { throw new Error('PARSE_ERROR'); }
 }
 
 async function getAllSettings() {
