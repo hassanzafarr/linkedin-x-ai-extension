@@ -1,10 +1,10 @@
-{
+﻿{
   "manifest_version": 3,
   "name": "EngageFlow AI — LinkedIn & X Growth Co-pilot",
   "version": "1.0.0",
   "description": "AI reply suggestions, feed scoring, and post drafting in your voice for LinkedIn and X.",
   "author": "EngageFlow AI",
-  "homepage_url": "https://hassanzafarr.github.io/linkedin-x-ai-extension/legal/privacy-policy.html",
+  "homepage_url": "https://habittforge.me/linkedin-x-ai-extension/legal/privacy-policy.html",
   "minimum_chrome_version": "116",
 
   "permissions": [

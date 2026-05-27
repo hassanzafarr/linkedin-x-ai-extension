@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { getApiKey, saveApiKey, getVoiceProfile, saveVoiceProfile, getSettings, saveSettings, getDraftHistory, getScheduledPosts } from '../lib/storage.js';
 
 export default function Options() {
@@ -348,7 +348,7 @@ export default function Options() {
           All data is stored locally on this device. No data is sent to EngageFlow AI servers.{' '}
           <a
             className="text-emerald-400 hover:text-emerald-300 hover:underline"
-            href="https://hassanzafarr.github.io/linkedin-x-ai-extension/legal/privacy-policy.html"
+            href="https://habittforge.me/linkedin-x-ai-extension/legal/privacy-policy.html"
             target="_blank"
             rel="noreferrer"
           >
@@ -357,7 +357,7 @@ export default function Options() {
           {' '}·{' '}
           <a
             className="text-emerald-400 hover:text-emerald-300 hover:underline"
-            href="https://hassanzafarr.github.io/linkedin-x-ai-extension/legal/terms-of-service.html"
+            href="https://habittforge.me/linkedin-x-ai-extension/legal/terms-of-service.html"
             target="_blank"
             rel="noreferrer"
           >
