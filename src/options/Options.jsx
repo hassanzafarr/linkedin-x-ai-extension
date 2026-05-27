@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getApiKey, saveApiKey, getVoiceProfile, saveVoiceProfile, getSettings, saveSettings } from '../lib/storage.js';
+import { getApiKey, saveApiKey, getVoiceProfile, saveVoiceProfile, getSettings, saveSettings, getDraftHistory, getScheduledPosts } from '../lib/storage.js';
 
 export default function Options() {
   const [apiKey, setApiKey] = useState('');
@@ -98,6 +98,47 @@ export default function Options() {
       setImportStatus('error');
       setImportError(err.message || String(err));
     }
+  }
+
+  async function exportAllData() {
+    const [voiceProfile, draftHistory, scheduledPosts, settings] = await Promise.all([
+      getVoiceProfile(),
+      getDraftHistory(),
+      getScheduledPosts(),
+      getSettings(),
+    ]);
+    const { claudeApiKey: _omit, ...safeSettings } = settings;
+    const payload = {
+      exportedAt: new Date().toISOString(),
+      apiKey: '[REDACTED — not exported for security]',
+      voiceProfile,
+      draftHistory,
+      scheduledPosts,
+      settings: safeSettings,
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `engageflow-data-${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  async function deleteAllData() {
+    if (!confirm('Permanently delete ALL EngageFlow AI data? This cannot be undone.')) return;
+    await Promise.all([
+      chrome.storage.local.clear(),
+      chrome.storage.sync.clear(),
+    ]);
+    setApiKey('');
+    setVoiceSamples('');
+    setStory('');
+    setWritingStyle('');
+    setFeedEnabled(true);
+    setReplyEnabled(true);
+    setThreshold(60);
+    setDefaultTone('professional');
   }
 
   async function handleSave() {
@@ -299,6 +340,45 @@ export default function Options() {
       >
         {saveStatus === 'saving' ? 'Saving…' : saveStatus === 'saved' ? '✓ Saved!' : 'Save Settings'}
       </button>
+
+      {/* Privacy & Data (GDPR) */}
+      <div className="card mt-5">
+        <div className="section-title">Privacy &amp; Data</div>
+        <p className="text-xs text-zinc-500 mb-4">
+          All data is stored locally on this device. No data is sent to EngageFlow AI servers.{' '}
+          <a
+            className="text-emerald-400 hover:text-emerald-300 hover:underline"
+            href="https://hassanzafarr.github.io/linkedin-x-ai-extension/legal/privacy-policy.html"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Privacy Policy
+          </a>
+          {' '}·{' '}
+          <a
+            className="text-emerald-400 hover:text-emerald-300 hover:underline"
+            href="https://hassanzafarr.github.io/linkedin-x-ai-extension/legal/terms-of-service.html"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Terms of Service
+          </a>
+        </p>
+        <div className="flex gap-2">
+          <button
+            className="btn-secondary flex-1 py-2 rounded-md text-sm"
+            onClick={exportAllData}
+          >
+            Export My Data
+          </button>
+          <button
+            className="flex-1 py-2 rounded-md text-sm bg-red-950/40 border border-red-900/50 text-red-400 hover:bg-red-950/60 transition-colors"
+            onClick={deleteAllData}
+          >
+            Delete All My Data
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
