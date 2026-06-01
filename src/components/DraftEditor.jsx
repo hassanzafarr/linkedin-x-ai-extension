@@ -63,6 +63,9 @@ export default function DraftEditor({ draft, platform, topic, tone, hookId, onRe
     window.open(url, '_blank');
   }
 
+  const actionBtnBase = 'flex items-center gap-1 text-xs px-2 py-1 border rounded-md transition-colors';
+  const actionBtnIdle = `${actionBtnBase} bg-gray-100 hover:bg-gray-200 border-gray-200 text-gray-600 dark:bg-zinc-900 dark:hover:bg-zinc-800 dark:border-zinc-800 dark:text-zinc-300`;
+
   return (
     <div className="draft-editor">
       <div className="relative">
@@ -77,19 +80,15 @@ export default function DraftEditor({ draft, platform, topic, tone, hookId, onRe
       </div>
 
       <div className="flex flex-wrap items-center gap-1.5 mt-2">
-        <button
-          onClick={onRegenerate}
-          className="flex items-center gap-1 text-xs px-2 py-1 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-md text-zinc-300"
-          title="Regenerate"
-        >
+        <button onClick={onRegenerate} className={actionBtnIdle} title="Regenerate">
           <RefreshCw className="w-3 h-3" /> Regenerate
         </button>
         <button
           onClick={handleSave}
-          className={`flex items-center gap-1 text-xs px-2 py-1 border rounded-md ${
+          className={`${actionBtnBase} ${
             saved
               ? 'bg-emerald-700 text-white border-emerald-700'
-              : 'bg-zinc-900 hover:bg-zinc-800 border-zinc-800 text-zinc-300'
+              : actionBtnIdle.replace(actionBtnBase, '').trim()
           }`}
         >
           {saved ? <Check className="w-3 h-3" /> : <Save className="w-3 h-3" />}
@@ -98,24 +97,21 @@ export default function DraftEditor({ draft, platform, topic, tone, hookId, onRe
         {platform === 'x' && (
           <button
             onClick={() => setThreadOpen(o => !o)}
-            className={`flex items-center gap-1 text-xs px-2 py-1 border rounded-md ${
+            className={`${actionBtnBase} ${
               threadOpen
-                ? 'bg-emerald-600/15 border-emerald-700/50 text-emerald-200'
-                : 'bg-zinc-900 hover:bg-zinc-800 border-zinc-800 text-zinc-300'
+                ? 'bg-emerald-600/15 border-emerald-700/50 text-emerald-700 dark:text-emerald-200'
+                : actionBtnIdle.replace(actionBtnBase, '').trim()
             }`}
           >
             <Layers className="w-3 h-3" /> Thread
           </button>
         )}
-        <button
-          onClick={() => setScheduleOpen(true)}
-          className="flex items-center gap-1 text-xs px-2 py-1 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-md text-zinc-300"
-        >
+        <button onClick={() => setScheduleOpen(true)} className={actionBtnIdle}>
           <Calendar className="w-3 h-3" /> Schedule
         </button>
         <button
           onClick={openComposeTab}
-          className="flex items-center gap-1 text-xs px-2 py-1 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-md text-zinc-300"
+          className={actionBtnIdle}
           title={platform === 'x' ? 'Open tweet composer' : 'Open LinkedIn (text copied)'}
         >
           <ExternalLink className="w-3 h-3" /> Open
@@ -133,7 +129,7 @@ export default function DraftEditor({ draft, platform, topic, tone, hookId, onRe
 
       <div className="mt-3">
         <RefinePanel onRefine={handleRefine} loading={refining} />
-        {refineErr && <div className="text-xs text-red-400 mt-1">{refineErr}</div>}
+        {refineErr && <div className="text-xs text-red-500 dark:text-red-400 mt-1">{refineErr}</div>}
       </div>
 
       {threadOpen && platform === 'x' && (
@@ -166,7 +162,7 @@ function CharRing({ pct, count, over, isThread }) {
   return (
     <div className="absolute top-2 right-2 flex items-center justify-center" title={isThread ? 'Thread' : `${count} chars`}>
       <svg width="32" height="32">
-        <circle cx="16" cy="16" r={r} stroke="#27272a" strokeWidth="2.5" fill="none" />
+        <circle cx="16" cy="16" r={r} className="stroke-gray-200 dark:stroke-zinc-800" strokeWidth="2.5" fill="none" />
         <circle
           cx="16" cy="16" r={r}
           stroke={stroke} strokeWidth="2.5" fill="none"
@@ -175,7 +171,7 @@ function CharRing({ pct, count, over, isThread }) {
           transform="rotate(-90 16 16)"
         />
       </svg>
-      <span className={`absolute text-[10px] font-mono ${over ? 'text-red-400' : 'text-zinc-400'}`}>
+      <span className={`absolute text-[10px] font-mono ${over ? 'text-red-400' : 'text-gray-500 dark:text-zinc-400'}`}>
         {isThread ? 'T' : count > 999 ? `${Math.floor(count / 100) / 10}k` : count}
       </span>
     </div>

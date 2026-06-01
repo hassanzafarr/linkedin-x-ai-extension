@@ -22,7 +22,9 @@
       "PowerShell(gh api repos/hassanzafarr/linkedin-x-ai-extension/pages 2>&1)",
       "WebFetch(domain:hassanzafarr.github.io)",
       "WebFetch(domain:habittforge.me)",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "Bash(node -e \"require\\('sharp'\\)\")",
+      "Bash(node -e ' *)"
     ],
     "additionalDirectories": [
       "X:\\Users\\HP\\.claude\\projects\\x--linkedin-x-ai-extension"

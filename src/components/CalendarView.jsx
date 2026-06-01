@@ -24,14 +24,14 @@ export default function CalendarView() {
   }
 
   if (loading) {
-    return <div className="text-sm text-zinc-500 py-6 text-center">Loading…</div>;
+    return <div className="text-sm text-gray-500 dark:text-zinc-500 py-6 text-center">Loading…</div>;
   }
   if (!items.length) {
     return (
       <div className="text-center py-10">
-        <CalIcon className="w-8 h-8 text-zinc-700 mx-auto mb-2" />
-        <p className="text-sm text-zinc-500">Nothing scheduled.</p>
-        <p className="text-xs text-zinc-600 mt-1">Schedule a draft to plan your week.</p>
+        <CalIcon className="w-8 h-8 text-gray-300 dark:text-zinc-700 mx-auto mb-2" />
+        <p className="text-sm text-gray-500 dark:text-zinc-500">Nothing scheduled.</p>
+        <p className="text-xs text-gray-400 dark:text-zinc-600 mt-1">Schedule a draft to plan your week.</p>
       </div>
     );
   }
@@ -39,17 +39,17 @@ export default function CalendarView() {
   return (
     <div className="calendar-view">
       <div className="flex items-center justify-between mb-3">
-        <div className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+        <div className="text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wider">
           Scheduled ({items.length})
         </div>
-        <div className="flex gap-1 p-0.5 bg-zinc-900 rounded">
+        <div className="flex gap-1 p-0.5 bg-gray-100 dark:bg-zinc-900 rounded">
           <button
             onClick={() => setView('list')}
-            className={`px-2 py-0.5 text-xs rounded ${view === 'list' ? 'bg-zinc-800 text-white' : 'text-zinc-500'}`}
+            className={`px-2 py-0.5 text-xs rounded ${view === 'list' ? 'bg-white text-gray-800 shadow-sm dark:bg-zinc-800 dark:text-white' : 'text-gray-500 dark:text-zinc-500'}`}
           >List</button>
           <button
             onClick={() => setView('week')}
-            className={`px-2 py-0.5 text-xs rounded ${view === 'week' ? 'bg-zinc-800 text-white' : 'text-zinc-500'}`}
+            className={`px-2 py-0.5 text-xs rounded ${view === 'week' ? 'bg-white text-gray-800 shadow-sm dark:bg-zinc-800 dark:text-white' : 'text-gray-500 dark:text-zinc-500'}`}
           >Week</button>
         </div>
       </div>
@@ -81,12 +81,12 @@ function WeekView({ items, onRemove, onCopy }) {
         const dayItems = items.filter(i => sameDay(i.scheduledFor, d));
         return (
           <div key={d.toISOString()}>
-            <div className="text-xs font-medium text-zinc-400 mb-1.5">
+            <div className="text-xs font-medium text-gray-500 dark:text-zinc-400 mb-1.5">
               {d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
-              <span className="text-zinc-600 ml-2">({dayItems.length})</span>
+              <span className="text-gray-400 dark:text-zinc-600 ml-2">({dayItems.length})</span>
             </div>
             {dayItems.length === 0 ? (
-              <div className="text-xs text-zinc-700 italic pl-2">empty</div>
+              <div className="text-xs text-gray-300 dark:text-zinc-700 italic pl-2">empty</div>
             ) : (
               <div className="space-y-1.5">
                 {dayItems.map(p => (
@@ -104,22 +104,22 @@ function WeekView({ items, onRemove, onCopy }) {
 function ScheduledRow({ item, compact, onRemove, onCopy }) {
   const overdue = item.scheduledFor < Date.now() && item.status !== 'done';
   return (
-    <div className={`${compact ? 'p-2' : 'p-3'} bg-zinc-900 border rounded-md ${overdue ? 'border-amber-900/60' : 'border-zinc-800'}`}>
+    <div className={`${compact ? 'p-2' : 'p-3'} bg-gray-50 border rounded-md dark:bg-zinc-900 ${overdue ? 'border-amber-300 dark:border-amber-900/60' : 'border-gray-200 dark:border-zinc-800'}`}>
       <div className="flex items-center justify-between mb-1">
-        <span className={`text-xs ${overdue ? 'text-amber-400' : 'text-zinc-500'}`}>
+        <span className={`text-xs ${overdue ? 'text-amber-600 dark:text-amber-400' : 'text-gray-500 dark:text-zinc-500'}`}>
           {formatTime(item.scheduledFor)} · {item.platform === 'x' ? 'X' : 'LinkedIn'}
           {overdue && ' · due'}
         </span>
         <div className="flex gap-1">
-          <button onClick={() => onCopy(item.text)} className="text-zinc-500 hover:text-zinc-200" title="Copy">
+          <button onClick={() => onCopy(item.text)} className="text-gray-400 hover:text-gray-700 dark:text-zinc-500 dark:hover:text-zinc-200" title="Copy">
             <Copy className="w-3 h-3" />
           </button>
-          <button onClick={() => onRemove(item.id)} className="text-zinc-500 hover:text-red-400" title="Delete">
+          <button onClick={() => onRemove(item.id)} className="text-gray-400 hover:text-red-500 dark:text-zinc-500 dark:hover:text-red-400" title="Delete">
             <Trash2 className="w-3 h-3" />
           </button>
         </div>
       </div>
-      <div className={`${compact ? 'text-xs line-clamp-2' : 'text-sm line-clamp-3'} text-zinc-200 whitespace-pre-wrap`}>
+      <div className={`${compact ? 'text-xs line-clamp-2' : 'text-sm line-clamp-3'} text-gray-800 dark:text-zinc-200 whitespace-pre-wrap`}>
         {item.text}
       </div>
     </div>

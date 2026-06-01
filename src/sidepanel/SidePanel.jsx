@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { Settings, PenSquare, Clock, Calendar, Sparkles, AlertCircle } from 'lucide-react';
 import { useClaude } from '../hooks/useClaude.js';
+import { useTheme } from '../hooks/useTheme.js';
+import ThemeToggle from '../components/ThemeToggle.jsx';
 import DraftEditor from '../components/DraftEditor.jsx';
 import VariantTabs from '../components/VariantTabs.jsx';
 import HookLibrary from '../components/HookLibrary.jsx';
@@ -36,6 +38,8 @@ export default function SidePanel() {
   const [chosenDraft, setChosenDraft] = useState(null);
   const [placeholderIdx, setPlaceholderIdx] = useState(0);
   const textareaRef = useRef(null);
+
+  const [theme, toggleTheme] = useTheme();
 
   const single = useClaude('DRAFT_POST');
   const multi = useClaude('DRAFT_VARIANTS');
@@ -103,9 +107,11 @@ export default function SidePanel() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-zinc-950">
+    <div className="min-h-screen flex flex-col bg-white dark:bg-zinc-950">
       <Header
         voiceStatus={voiceStatus}
+        theme={theme}
+        onToggleTheme={toggleTheme}
         onOpenSettings={() => chrome.runtime.openOptionsPage()}
       />
 
@@ -143,32 +149,33 @@ export default function SidePanel() {
   );
 }
 
-function Header({ voiceStatus, onOpenSettings }) {
+function Header({ voiceStatus, theme, onToggleTheme, onOpenSettings }) {
   return (
-    <div className="px-4 pt-4 pb-3 border-b border-zinc-900">
+    <div className="px-4 pt-4 pb-3 border-b border-gray-200 dark:border-zinc-900">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 bg-emerald-600 rounded-md flex items-center justify-center text-white font-semibold text-sm">E</div>
           <div>
-            <div className="font-semibold text-zinc-100 text-sm leading-tight">EngageFlow AI</div>
-            <div className="text-[11px] text-zinc-500 leading-tight">Posts in your voice</div>
+            <div className="font-semibold text-gray-900 dark:text-zinc-100 text-sm leading-tight">EngageFlow AI</div>
+            <div className="text-[11px] text-gray-500 dark:text-zinc-500 leading-tight">Posts in your voice</div>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           <button
             onClick={onOpenSettings}
             className={`flex items-center gap-1 text-[11px] px-2 py-1 rounded-full border transition-colors ${
               voiceStatus === 'trained'
-                ? 'bg-emerald-600/15 border-emerald-700/50 text-emerald-300 hover:bg-emerald-600/25'
-                : 'bg-amber-600/10 border-amber-700/40 text-amber-300 hover:bg-amber-600/20'
+                ? 'bg-emerald-600/15 border-emerald-700/50 text-emerald-700 hover:bg-emerald-600/25 dark:text-emerald-300'
+                : 'bg-amber-600/10 border-amber-700/40 text-amber-700 hover:bg-amber-600/20 dark:text-amber-300'
             }`}
           >
             <Sparkles className="w-3 h-3" />
             {voiceStatus === 'trained' ? 'Voice: trained' : 'Voice: set up'}
           </button>
+          <ThemeToggle theme={theme} onToggle={onToggleTheme} />
           <button
             onClick={onOpenSettings}
-            className="p-1.5 text-zinc-400 hover:text-zinc-200 rounded-md hover:bg-zinc-900"
+            className="p-1.5 text-gray-500 hover:text-gray-800 rounded-md hover:bg-gray-100 dark:text-zinc-400 dark:hover:text-zinc-200 dark:hover:bg-zinc-900"
             title="Settings"
           >
             <Settings className="w-4 h-4" />
@@ -186,7 +193,7 @@ function Tabs({ tab, setTab }) {
     { id: 'calendar', label: 'Calendar', icon: Calendar },
   ];
   return (
-    <div className="flex border-b border-zinc-900 px-2 bg-zinc-950 sticky top-0 z-10">
+    <div className="flex border-b border-gray-200 dark:border-zinc-900 px-2 bg-white dark:bg-zinc-950 sticky top-0 z-10">
       {tabs.map(t => {
         const Icon = t.icon;
         const active = tab === t.id;
@@ -196,8 +203,8 @@ function Tabs({ tab, setTab }) {
             onClick={() => setTab(t.id)}
             className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium transition-colors border-b-2 ${
               active
-                ? 'text-emerald-400 border-emerald-500'
-                : 'text-zinc-500 border-transparent hover:text-zinc-300'
+                ? 'text-emerald-600 border-emerald-500 dark:text-emerald-400'
+                : 'text-gray-500 border-transparent hover:text-gray-700 dark:text-zinc-500 dark:hover:text-zinc-300'
             }`}
           >
             <Icon className="w-3.5 h-3.5" />
@@ -218,11 +225,11 @@ function ComposeTab({
   return (
     <div className="pt-4 space-y-4">
       {voiceStatus === 'empty' && (
-        <div className="flex gap-2 p-2.5 bg-amber-600/10 border border-amber-700/40 rounded-md text-xs text-amber-200">
+        <div className="flex gap-2 p-2.5 bg-amber-50 border border-amber-200 rounded-md text-xs text-amber-800 dark:bg-amber-600/10 dark:border-amber-700/40 dark:text-amber-200">
           <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
           <div>
             <div className="font-medium">No voice profile yet.</div>
-            <div className="text-amber-200/80">Drafts use generic tone. Set up your voice in Settings for posts that sound like you.</div>
+            <div className="text-amber-700 dark:text-amber-200/80">Drafts use generic tone. Set up your voice in Settings for posts that sound like you.</div>
           </div>
         </div>
       )}
@@ -236,7 +243,7 @@ function ComposeTab({
               className={`py-2 rounded-md text-sm font-medium transition-colors ${
                 platform === p
                   ? 'bg-emerald-600 text-white'
-                  : 'bg-zinc-900 text-zinc-400 border border-zinc-800 hover:border-zinc-700 hover:text-zinc-200'
+                  : 'bg-gray-100 text-gray-600 border border-gray-200 hover:border-gray-300 hover:text-gray-800 dark:bg-zinc-900 dark:text-zinc-400 dark:border-zinc-800 dark:hover:border-zinc-700 dark:hover:text-zinc-200'
               }`}
             >
               {p === 'linkedin' ? 'LinkedIn' : 'X / Twitter'}
@@ -254,7 +261,7 @@ function ComposeTab({
               className={`py-1.5 rounded-md text-xs font-medium capitalize transition-colors ${
                 tone === t
                   ? 'bg-emerald-600 text-white'
-                  : 'bg-zinc-900 text-zinc-400 border border-zinc-800 hover:border-zinc-700 hover:text-zinc-200'
+                  : 'bg-gray-100 text-gray-600 border border-gray-200 hover:border-gray-300 hover:text-gray-800 dark:bg-zinc-900 dark:text-zinc-400 dark:border-zinc-800 dark:hover:border-zinc-700 dark:hover:text-zinc-200'
               }`}
             >
               {t}
@@ -279,18 +286,18 @@ function ComposeTab({
           onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) onGenerate(); }}
         />
         <div className="flex items-center justify-between mt-1">
-          <p className="text-xs text-zinc-500">⌘/Ctrl+Enter to generate</p>
-          <p className={`text-xs ${topic.length < 15 && topic.length > 0 ? 'text-amber-400' : 'text-zinc-600'}`}>
+          <p className="text-xs text-gray-500 dark:text-zinc-500">⌘/Ctrl+Enter to generate</p>
+          <p className={`text-xs ${topic.length < 15 && topic.length > 0 ? 'text-amber-500 dark:text-amber-400' : 'text-gray-400 dark:text-zinc-600'}`}>
             {topic.length} chars{topic.length > 0 && topic.length < 15 ? ' · add more detail' : ''}
           </p>
         </div>
       </div>
 
-      <div className="flex gap-1 p-1 bg-zinc-900 rounded-md">
+      <div className="flex gap-1 p-1 bg-gray-100 dark:bg-zinc-900 rounded-md">
         <button
           onClick={() => setMode('variants')}
           className={`flex-1 py-1.5 text-xs font-medium rounded transition-colors ${
-            mode === 'variants' ? 'bg-emerald-600 text-white' : 'text-zinc-400 hover:text-zinc-200'
+            mode === 'variants' ? 'bg-emerald-600 text-white' : 'text-gray-500 hover:text-gray-700 dark:text-zinc-400 dark:hover:text-zinc-200'
           }`}
         >
           3 variants
@@ -298,7 +305,7 @@ function ComposeTab({
         <button
           onClick={() => setMode('single')}
           className={`flex-1 py-1.5 text-xs font-medium rounded transition-colors ${
-            mode === 'single' ? 'bg-emerald-600 text-white' : 'text-zinc-400 hover:text-zinc-200'
+            mode === 'single' ? 'bg-emerald-600 text-white' : 'text-gray-500 hover:text-gray-700 dark:text-zinc-400 dark:hover:text-zinc-200'
           }`}
         >
           Single draft
@@ -320,9 +327,9 @@ function ComposeTab({
 
       {error === 'NO_API_KEY' && (
         <div className="card text-center">
-          <p className="text-sm text-zinc-400 mb-2">No API key set.</p>
+          <p className="text-sm text-gray-600 dark:text-zinc-400 mb-2">No API key set.</p>
           <button
-            className="text-emerald-400 text-sm hover:text-emerald-300 hover:underline"
+            className="text-emerald-600 text-sm hover:text-emerald-500 hover:underline dark:text-emerald-400 dark:hover:text-emerald-300"
             onClick={() => chrome.runtime.openOptionsPage()}
           >
             Open Settings →
@@ -331,8 +338,8 @@ function ComposeTab({
       )}
 
       {error && error !== 'NO_API_KEY' && (
-        <div className="card border-red-900/50 bg-red-950/20">
-          <p className="text-sm text-red-400">
+        <div className="card border-red-200 bg-red-50 dark:border-red-900/50 dark:bg-red-950/20">
+          <p className="text-sm text-red-600 dark:text-red-400">
             {error === 'RATE_LIMIT'
               ? 'Rate limit hit. Wait a moment and retry.'
               : error === 'PARSE_ERROR'
@@ -349,10 +356,10 @@ function ComposeTab({
       {chosenDraft && !loading && (
         <div>
           <div className="flex items-center justify-between mb-2">
-            <div className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Draft</div>
+            <div className="text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wider">Draft</div>
             <button
               onClick={onClearDraft}
-              className="text-xs text-zinc-500 hover:text-zinc-300"
+              className="text-xs text-gray-400 hover:text-gray-700 dark:text-zinc-500 dark:hover:text-zinc-300"
             >Clear</button>
           </div>
           <DraftEditor

@@ -31,7 +31,7 @@ export default function RefinePanel({ onRefine, loading }) {
 
   return (
     <div className="refine-panel">
-      <div className="flex items-center gap-1.5 text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">
+      <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wider mb-2">
         <Wand2 className="w-3 h-3" /> Refine
       </div>
       <div className="flex flex-wrap gap-1.5">
@@ -40,7 +40,7 @@ export default function RefinePanel({ onRefine, loading }) {
             key={a.id}
             disabled={loading}
             onClick={() => onRefine({ action: a.label, instruction: a.instruction })}
-            className="px-2.5 py-1 text-xs bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 rounded-md text-zinc-300 transition-colors disabled:opacity-40"
+            className="px-2.5 py-1 text-xs bg-gray-100 hover:bg-gray-200 border border-gray-200 hover:border-gray-300 rounded-md text-gray-600 transition-colors disabled:opacity-40 dark:bg-zinc-900 dark:hover:bg-zinc-800 dark:border-zinc-800 dark:hover:border-zinc-700 dark:text-zinc-300"
           >
             {a.label}
           </button>
@@ -48,7 +48,7 @@ export default function RefinePanel({ onRefine, loading }) {
         <button
           disabled={loading}
           onClick={() => setCustomOpen(o => !o)}
-          className="px-2.5 py-1 text-xs bg-emerald-600/15 hover:bg-emerald-600/25 border border-emerald-700/40 rounded-md text-emerald-200 transition-colors disabled:opacity-40"
+          className="px-2.5 py-1 text-xs bg-emerald-600/15 hover:bg-emerald-600/25 border border-emerald-700/40 rounded-md text-emerald-700 dark:text-emerald-200 transition-colors disabled:opacity-40"
         >
           + Custom
         </button>
@@ -75,7 +75,7 @@ export default function RefinePanel({ onRefine, loading }) {
       )}
 
       {loading && (
-        <div className="mt-2 flex items-center gap-2 text-xs text-emerald-400">
+        <div className="mt-2 flex items-center gap-2 text-xs text-emerald-600 dark:text-emerald-400">
           <Loader2 className="w-3 h-3 animate-spin" /> Refining…
         </div>
       )}

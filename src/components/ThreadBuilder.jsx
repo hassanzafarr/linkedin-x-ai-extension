@@ -48,10 +48,10 @@ export default function ThreadBuilder({ initialText, onChange, onClose }) {
   }
 
   return (
-    <div className="thread-builder bg-zinc-950 border border-zinc-800 rounded-lg p-3">
+    <div className="thread-builder bg-white border border-gray-200 rounded-lg p-3 dark:bg-zinc-950 dark:border-zinc-800">
       <div className="flex items-center justify-between mb-3">
-        <div className="text-sm font-semibold text-zinc-100">Thread builder ({tweets.length}/10)</div>
-        <button onClick={onClose} className="text-xs text-zinc-400 hover:text-zinc-200">Close</button>
+        <div className="text-sm font-semibold text-gray-900 dark:text-zinc-100">Thread builder ({tweets.length}/10)</div>
+        <button onClick={onClose} className="text-xs text-gray-500 hover:text-gray-700 dark:text-zinc-400 dark:hover:text-zinc-200">Close</button>
       </div>
 
       <div className="space-y-2">
@@ -65,9 +65,9 @@ export default function ThreadBuilder({ initialText, onChange, onClose }) {
               onDragStart={() => onDragStart(i)}
               onDragOver={onDragOver}
               onDrop={() => onDrop(i)}
-              className={`flex gap-2 p-2 bg-zinc-900 border rounded-md ${over ? 'border-red-900/60' : 'border-zinc-800'}`}
+              className={`flex gap-2 p-2 bg-gray-50 border rounded-md dark:bg-zinc-900 ${over ? 'border-red-300 dark:border-red-900/60' : 'border-gray-200 dark:border-zinc-800'}`}
             >
-              <div className="flex flex-col items-center gap-1 pt-1.5 text-zinc-500">
+              <div className="flex flex-col items-center gap-1 pt-1.5 text-gray-400 dark:text-zinc-500">
                 <GripVertical className="w-3.5 h-3.5 cursor-grab" />
                 <span className="text-xs font-mono">{i + 1}</span>
               </div>
@@ -77,13 +77,13 @@ export default function ThreadBuilder({ initialText, onChange, onClose }) {
                   onChange={e => update(i, e.target.value)}
                   placeholder={i === 0 ? 'Opening hook…' : 'Next tweet…'}
                   rows={3}
-                  className="w-full bg-transparent text-sm text-zinc-100 placeholder-zinc-600 resize-none focus:outline-none"
+                  className="w-full bg-transparent text-sm text-gray-900 placeholder-gray-400 resize-none focus:outline-none dark:text-zinc-100 dark:placeholder-zinc-600"
                 />
                 <div className="flex items-center justify-between mt-1">
-                  <span className={`text-xs ${over ? 'text-red-400' : 'text-zinc-500'}`}>
+                  <span className={`text-xs ${over ? 'text-red-500 dark:text-red-400' : 'text-gray-500 dark:text-zinc-500'}`}>
                     {len}/{X_LIMIT}
                   </span>
-                  <button onClick={() => remove(i)} className="text-zinc-500 hover:text-red-400">
+                  <button onClick={() => remove(i)} className="text-gray-400 hover:text-red-500 dark:text-zinc-500 dark:hover:text-red-400">
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
                 </div>
@@ -97,7 +97,7 @@ export default function ThreadBuilder({ initialText, onChange, onClose }) {
         <button
           onClick={add}
           disabled={tweets.length >= 10}
-          className="flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-md text-zinc-300 disabled:opacity-40"
+          className="flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs bg-gray-100 hover:bg-gray-200 border border-gray-200 rounded-md text-gray-600 disabled:opacity-40 dark:bg-zinc-900 dark:hover:bg-zinc-800 dark:border-zinc-800 dark:text-zinc-300"
         >
           <Plus className="w-3.5 h-3.5" /> Add tweet
         </button>

@@ -26,14 +26,14 @@ export default function HistoryDrawer({ onRestore }) {
   }
 
   if (loading) {
-    return <div className="text-sm text-zinc-500 py-6 text-center">Loading…</div>;
+    return <div className="text-sm text-gray-500 dark:text-zinc-500 py-6 text-center">Loading…</div>;
   }
   if (!drafts.length) {
     return (
       <div className="text-center py-10">
-        <Clock className="w-8 h-8 text-zinc-700 mx-auto mb-2" />
-        <p className="text-sm text-zinc-500">No drafts yet.</p>
-        <p className="text-xs text-zinc-600 mt-1">Saved drafts appear here.</p>
+        <Clock className="w-8 h-8 text-gray-300 dark:text-zinc-700 mx-auto mb-2" />
+        <p className="text-sm text-gray-500 dark:text-zinc-500">No drafts yet.</p>
+        <p className="text-xs text-gray-400 dark:text-zinc-600 mt-1">Saved drafts appear here.</p>
       </div>
     );
   }
@@ -41,14 +41,14 @@ export default function HistoryDrawer({ onRestore }) {
   return (
     <div className="history-drawer">
       <div className="flex items-center justify-between mb-3">
-        <div className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+        <div className="text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wider">
           History ({drafts.length})
         </div>
         <div className="flex gap-1">
-          <button onClick={reload} className="p-1 text-zinc-500 hover:text-zinc-300" title="Reload">
+          <button onClick={reload} className="p-1 text-gray-400 hover:text-gray-700 dark:text-zinc-500 dark:hover:text-zinc-300" title="Reload">
             <RefreshCw className="w-3.5 h-3.5" />
           </button>
-          <button onClick={clearAll} className="text-xs text-red-400/80 hover:text-red-300">
+          <button onClick={clearAll} className="text-xs text-red-500 hover:text-red-600 dark:text-red-400/80 dark:hover:text-red-300">
             Clear all
           </button>
         </div>
@@ -56,24 +56,24 @@ export default function HistoryDrawer({ onRestore }) {
 
       <div className="space-y-2">
         {drafts.map(d => (
-          <div key={d.id} className="p-3 bg-zinc-900 border border-zinc-800 rounded-md hover:border-zinc-700 transition-colors">
+          <div key={d.id} className="p-3 bg-gray-50 border border-gray-200 rounded-md hover:border-gray-300 transition-colors dark:bg-zinc-900 dark:border-zinc-800 dark:hover:border-zinc-700">
             <div className="flex items-center justify-between mb-1">
-              <span className="text-xs text-zinc-500">
+              <span className="text-xs text-gray-500 dark:text-zinc-500">
                 {timeAgo(d.createdAt)} · {d.platform === 'x' ? 'X' : 'LinkedIn'} · {d.tone}
               </span>
-              <button onClick={() => remove(d.id)} className="text-zinc-500 hover:text-red-400">
+              <button onClick={() => remove(d.id)} className="text-gray-400 hover:text-red-500 dark:text-zinc-500 dark:hover:text-red-400">
                 <Trash2 className="w-3 h-3" />
               </button>
             </div>
             {d.topic && (
-              <div className="text-xs text-zinc-400 mb-1 truncate">Topic: {d.topic}</div>
+              <div className="text-xs text-gray-500 dark:text-zinc-400 mb-1 truncate">Topic: {d.topic}</div>
             )}
-            <div className="text-sm text-zinc-200 line-clamp-3 whitespace-pre-wrap mb-2">
+            <div className="text-sm text-gray-800 dark:text-zinc-200 line-clamp-3 whitespace-pre-wrap mb-2">
               {d.text}
             </div>
             <button
               onClick={() => onRestore(d)}
-              className="text-xs text-emerald-400 hover:text-emerald-300"
+              className="text-xs text-emerald-600 hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300"
             >
               Restore →
             </button>

@@ -8,7 +8,7 @@ export default function VariantTabs({ variants, platform, onSelect }) {
 
   return (
     <div className="variant-tabs">
-      <div className="flex gap-1 mb-2 p-1 bg-zinc-900 rounded-md">
+      <div className="flex gap-1 mb-2 p-1 bg-gray-100 dark:bg-zinc-900 rounded-md">
         {variants.map((_, i) => (
           <button
             key={i}
@@ -16,7 +16,7 @@ export default function VariantTabs({ variants, platform, onSelect }) {
             className={`flex-1 py-1.5 px-2 text-xs font-medium rounded transition-colors ${
               active === i
                 ? 'bg-emerald-600 text-white'
-                : 'text-zinc-400 hover:text-zinc-200'
+                : 'text-gray-500 hover:text-gray-700 dark:text-zinc-400 dark:hover:text-zinc-200'
             }`}
           >
             {labels[i] || `V${i + 1}`}
@@ -24,12 +24,12 @@ export default function VariantTabs({ variants, platform, onSelect }) {
         ))}
       </div>
 
-      <div className="variant-preview p-3 bg-zinc-900 border border-zinc-800 rounded-md text-sm text-zinc-200 whitespace-pre-wrap max-h-56 overflow-y-auto">
+      <div className="variant-preview p-3 bg-gray-50 border border-gray-200 rounded-md text-sm text-gray-800 whitespace-pre-wrap max-h-56 overflow-y-auto dark:bg-zinc-900 dark:border-zinc-800 dark:text-zinc-200">
         {variants[active]}
       </div>
 
       <div className="flex items-center justify-between mt-2">
-        <span className="text-xs text-zinc-500">
+        <span className="text-xs text-gray-500 dark:text-zinc-500">
           {variants[active].length} chars · {platform === 'x' ? 'X / Twitter' : 'LinkedIn'}
         </span>
         <button

@@ -1,5 +1,7 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { getApiKey, saveApiKey, getVoiceProfile, saveVoiceProfile, getSettings, saveSettings, getDraftHistory, getScheduledPosts } from '../lib/storage.js';
+import { useTheme } from '../hooks/useTheme.js';
+import ThemeToggle from '../components/ThemeToggle.jsx';
 
 export default function Options() {
   const [apiKey, setApiKey] = useState('');
@@ -20,6 +22,8 @@ export default function Options() {
   const [importStage, setImportStage] = useState('');
   const [importError, setImportError] = useState('');
   const [importSummary, setImportSummary] = useState(null);
+
+  const [theme, toggleTheme] = useTheme();
 
   useEffect(() => {
     function onProgress(msg) {
@@ -53,7 +57,6 @@ export default function Options() {
     console.log('[Options] Test result:', result);
     setTestStatus(result.ok ? 'ok' : 'error');
     if (result.ok) {
-      // Persist immediately so refresh doesn't drop the key.
       saveApiKey(trimmed).catch(err => console.error('[Options] saveApiKey failed:', err));
     } else {
       setTestError(result.error || 'Unknown error');
@@ -157,12 +160,15 @@ export default function Options() {
 
   return (
     <div className="max-w-2xl mx-auto px-6 py-8">
-      <div className="flex items-center gap-3 mb-8">
-        <div className="w-9 h-9 bg-emerald-600 rounded-md flex items-center justify-center text-white font-semibold text-base">E</div>
-        <div>
-          <h1 className="text-lg font-semibold text-zinc-100">EngageFlow AI Settings</h1>
-          <p className="text-xs text-zinc-500">AI for LinkedIn &amp; X</p>
+      <div className="flex items-center justify-between gap-3 mb-8">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 bg-emerald-600 rounded-md flex items-center justify-center text-white font-semibold text-base">E</div>
+          <div>
+            <h1 className="text-lg font-semibold text-gray-900 dark:text-zinc-100">EngageFlow AI Settings</h1>
+            <p className="text-xs text-gray-500 dark:text-zinc-500">AI for LinkedIn &amp; X</p>
+          </div>
         </div>
+        <ThemeToggle theme={theme} onToggle={toggleTheme} />
       </div>
 
       {/* API Key */}
@@ -185,14 +191,14 @@ export default function Options() {
             {testStatus === 'testing' ? '…' : testStatus === 'ok' ? '✓ OK' : testStatus === 'error' ? '✕ Failed' : 'Test'}
           </button>
         </div>
-        <p className="text-xs text-zinc-500 mt-2">
+        <p className="text-xs text-gray-500 dark:text-zinc-500 mt-2">
           Get an API key at{' '}
-          <a className="text-emerald-400 hover:text-emerald-300 hover:underline" href="https://console.anthropic.com/" target="_blank" rel="noreferrer">
+          <a className="text-emerald-600 hover:text-emerald-500 hover:underline dark:text-emerald-400 dark:hover:text-emerald-300" href="https://console.anthropic.com/" target="_blank" rel="noreferrer">
             console.anthropic.com
           </a>
         </p>
         {testError && (
-          <pre className="text-xs text-red-400 mt-2 whitespace-pre-wrap break-all bg-red-950/30 border border-red-900/50 rounded p-2">
+          <pre className="text-xs text-red-500 mt-2 whitespace-pre-wrap break-all bg-red-50 border border-red-200 rounded p-2 dark:text-red-400 dark:bg-red-950/30 dark:border-red-900/50">
             {testError}
           </pre>
         )}
@@ -220,27 +226,27 @@ export default function Options() {
             {importStatus === 'running' ? '…' : importStatus === 'ok' ? '✓ Imported' : 'Import'}
           </button>
         </div>
-        <p className="text-xs text-zinc-500 mt-2">
+        <p className="text-xs text-gray-500 dark:text-zinc-500 mt-2">
           Make sure you are logged in to LinkedIn in this Chrome. We open your profile in a background tab, scroll it, and analyze visible text. Takes ~30–45s.
         </p>
         {importStatus === 'running' && (
-          <p className="text-xs text-emerald-400 mt-2">{importStage}</p>
+          <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-2">{importStage}</p>
         )}
         {importStatus === 'ok' && importSummary && (
-          <p className="text-xs text-emerald-400 mt-2">
+          <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-2">
             Imported {importSummary.count} samples
             {importSummary.name && ` for ${importSummary.name}`}
             {importSummary.headline && ` — ${importSummary.headline}`}.
           </p>
         )}
         {importStatus === 'error' && importError && (
-          <pre className="text-xs text-red-400 mt-2 whitespace-pre-wrap break-all bg-red-950/30 border border-red-900/50 rounded p-2">
+          <pre className="text-xs text-red-500 mt-2 whitespace-pre-wrap break-all bg-red-50 border border-red-200 rounded p-2 dark:text-red-400 dark:bg-red-950/30 dark:border-red-900/50">
             {importError}
           </pre>
         )}
 
         <label className="label mt-4">Your story in a few sentences</label>
-        <p className="text-xs text-zinc-500 mb-1">What you work on and care about. Auto-filled from LinkedIn import — edit if needed.</p>
+        <p className="text-xs text-gray-500 dark:text-zinc-500 mb-1">What you work on and care about. Auto-filled from LinkedIn import — edit if needed.</p>
         <textarea
           className="input-field"
           rows={4}
@@ -250,7 +256,7 @@ export default function Options() {
         />
 
         <label className="label mt-4">Writing style</label>
-        <p className="text-xs text-zinc-500 mb-1">How you write — tone, sentence length, recurring patterns. Auto-filled from import.</p>
+        <p className="text-xs text-gray-500 dark:text-zinc-500 mb-1">How you write — tone, sentence length, recurring patterns. Auto-filled from import.</p>
         <textarea
           className="input-field"
           rows={4}
@@ -267,7 +273,7 @@ export default function Options() {
           value={voiceSamples}
           onChange={e => setVoiceSamples(e.target.value)}
         />
-        <p className={`text-xs mt-1 ${sampleBytes > 40000 ? 'text-amber-400' : 'text-zinc-500'}`}>
+        <p className={`text-xs mt-1 ${sampleBytes > 40000 ? 'text-amber-500 dark:text-amber-400' : 'text-gray-500 dark:text-zinc-500'}`}>
           {sampleKB} KB used {sampleBytes > 40000 && '— consider trimming to keep quality high'}
         </p>
       </div>
@@ -278,8 +284,8 @@ export default function Options() {
         <div className="space-y-4">
           <label className="flex items-center justify-between">
             <div>
-              <div className="text-sm text-zinc-100 font-medium">Feed Scanner</div>
-              <div className="text-xs text-zinc-500">Highlight high-value posts in your feed</div>
+              <div className="text-sm text-gray-900 dark:text-zinc-100 font-medium">Feed Scanner</div>
+              <div className="text-xs text-gray-500 dark:text-zinc-500">Highlight high-value posts in your feed</div>
             </div>
             <input
               type="checkbox"
@@ -298,7 +304,7 @@ export default function Options() {
                 value={threshold}
                 onChange={e => setThreshold(Number(e.target.value))}
               />
-              <div className="flex justify-between text-xs text-zinc-500 mt-1">
+              <div className="flex justify-between text-xs text-gray-500 dark:text-zinc-500 mt-1">
                 <span>Show more</span><span>Show less</span>
               </div>
             </div>
@@ -306,8 +312,8 @@ export default function Options() {
 
           <label className="flex items-center justify-between">
             <div>
-              <div className="text-sm text-zinc-100 font-medium">Reply Suggestions</div>
-              <div className="text-xs text-zinc-500">Show "Draft Reply" button on posts</div>
+              <div className="text-sm text-gray-900 dark:text-zinc-100 font-medium">Reply Suggestions</div>
+              <div className="text-xs text-gray-500 dark:text-zinc-500">Show "Draft Reply" button on posts</div>
             </div>
             <input
               type="checkbox"
@@ -344,10 +350,10 @@ export default function Options() {
       {/* Privacy & Data (GDPR) */}
       <div className="card mt-5">
         <div className="section-title">Privacy &amp; Data</div>
-        <p className="text-xs text-zinc-500 mb-4">
+        <p className="text-xs text-gray-500 dark:text-zinc-500 mb-4">
           All data is stored locally on this device. No data is sent to EngageFlow AI servers.{' '}
           <a
-            className="text-emerald-400 hover:text-emerald-300 hover:underline"
+            className="text-emerald-600 hover:text-emerald-500 hover:underline dark:text-emerald-400 dark:hover:text-emerald-300"
             href="https://hassanzafarr.github.io/linkedin-x-ai-extension/legal/privacy-policy.html"
             target="_blank"
             rel="noreferrer"
@@ -356,7 +362,7 @@ export default function Options() {
           </a>
           {' '}·{' '}
           <a
-            className="text-emerald-400 hover:text-emerald-300 hover:underline"
+            className="text-emerald-600 hover:text-emerald-500 hover:underline dark:text-emerald-400 dark:hover:text-emerald-300"
             href="https://hassanzafarr.github.io/linkedin-x-ai-extension/legal/terms-of-service.html"
             target="_blank"
             rel="noreferrer"
@@ -372,7 +378,7 @@ export default function Options() {
             Export My Data
           </button>
           <button
-            className="flex-1 py-2 rounded-md text-sm bg-red-950/40 border border-red-900/50 text-red-400 hover:bg-red-950/60 transition-colors"
+            className="flex-1 py-2 rounded-md text-sm bg-red-50 border border-red-200 text-red-600 hover:bg-red-100 transition-colors dark:bg-red-950/40 dark:border-red-900/50 dark:text-red-400 dark:hover:bg-red-950/60"
             onClick={deleteAllData}
           >
             Delete All My Data
