@@ -22,7 +22,7 @@ The extension reads visible post content from your LinkedIn and X feeds to gener
 - No account required
 - No analytics or tracking
 - Full data export and deletion available in Settings
-- [Privacy Policy](https://habittforge.me/linkedin-x-ai-extension/legal/privacy-policy.html)
+- [Privacy Policy](https://hassanzafarr.github.io/linkedin-x-ai-extension/legal/privacy-policy.html)
 
 ### Data disclosure (required by Chrome Web Store policy)
 This extension reads publicly visible text content from LinkedIn and X pages you are viewing in order to generate AI reply suggestions. When you use the "Import from LinkedIn" feature, the extension opens your LinkedIn profile in a background tab to read your posts and extract your writing style. This data is sent to the Anthropic Claude API using your own API key. No data is transmitted to EngageFlow AI.
@@ -40,7 +40,7 @@ Productivity
 English
 
 ## Privacy Policy URL
-https://habittforge.me/linkedin-x-ai-extension/legal/privacy-policy.html
+https://hassanzafarr.github.io/linkedin-x-ai-extension/legal/privacy-policy.html
 
 ## Single Purpose Description (for CWS review)
 Generates AI-powered reply suggestions and post drafts for LinkedIn and X using the user's own Anthropic API key and writing style profile.

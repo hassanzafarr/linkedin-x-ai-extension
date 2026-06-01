@@ -17,34 +17,34 @@
 - [x] `dist/` size ~414 KB total (well under 5 MB) (verified 2026-05-27)
 - [x] No `.map` files in `dist/` (sourcemaps off by default in Vite prod)
 - [x] lucide-react named imports — tree-shaken by Vite ESM bundling
-- [ ] **Manual cross-browser QA** — Chrome stable, Edge, Brave (track in QA matrix below)
+- [x] **Manual cross-browser QA** — Chrome stable, Edge, Brave (verified 2026-06-01)
 
 ### Manual Cross-Browser QA Matrix
 
 | Browser | Version | Loads unpacked | Side panel | Content inject (LinkedIn) | Content inject (X) | Notes |
 |---|---|---|---|---|---|---|
-| Chrome stable |   |   |   |   |   |   |
-| Edge (Chromium) |   |   |   |   |   |   |
-| Brave |   |   |   |   |   |   |
+| Chrome stable | ✅ | ✅ | ✅ | ✅ | ✅ | verified 2026-06-01 |
+| Edge (Chromium) | ✅ | ✅ | ✅ | ✅ | ✅ | verified 2026-06-01 |
+| Brave | ✅ | ✅ | ✅ | ✅ | ✅ | verified 2026-06-01 |
 
-## Phase 3: Functional QA
+## Phase 3: Functional QA ✅
 
-> Code review + bug fixes completed 2026-05-27. 3 bugs fixed (see below). Manual live testing still required.
+> All manual testing completed 2026-06-01. 3 bugs fixed 2026-05-27 (see below).
 
 **Bugs fixed (2026-05-27):**
 - `callClaude` — 429 response now throws `Error('RATE_LIMIT')` so UI `error === 'RATE_LIMIT'` check works ([src/lib/claude.js](src/lib/claude.js))
 - `generateReply` — `JSON.parse` now wrapped in try/catch → throws clean `PARSE_ERROR` ([src/background/service-worker.js](src/background/service-worker.js))
 - `scorePost` — same `JSON.parse` fix ([src/background/service-worker.js](src/background/service-worker.js))
 
-- [ ] LinkedIn — reply, composer, scrape profile all paths *(manual test required)*
-- [ ] X/Twitter — reply, composer paths *(manual test required)*
-- [ ] Side panel — compose, history, calendar, schedule modal *(manual test required)*
-- [ ] Intent picker — every intent variant *(manual test required)*
-- [ ] Hook library / refine panel / variant tabs *(manual test required)*
-- [ ] Thread builder *(manual test required)*
+- [x] LinkedIn — reply, composer, scrape profile all paths (verified 2026-06-01)
+- [x] X/Twitter — reply, composer paths (verified 2026-06-01)
+- [x] Side panel — compose, history, calendar, schedule modal (verified 2026-06-01)
+- [x] Intent picker — every intent variant (verified 2026-06-01)
+- [x] Hook library / refine panel / variant tabs (verified 2026-06-01)
+- [x] Thread builder (verified 2026-06-01)
 - [x] Error states — `NO_API_KEY` (sidepanel shows settings link), `RATE_LIMIT` (fixed), `PARSE_ERROR` (fixed), network fail (`NETWORK_ERROR` propagates), Anthropic 5xx (propagates as `5xx http_error: ...`)
-- [ ] Logout / key rotation flow *(manual test required)*
-- [ ] DOM selectors resilient — last verified 2026-05-21; re-verify before submit
+- [x] Logout / key rotation flow (verified 2026-06-01)
+- [x] DOM selectors resilient — verified 2026-06-01
 
 ## Phase 4: Privacy + Legal ✅
 
@@ -57,7 +57,7 @@
 - [x] GDPR — Export My Data (JSON, API key redacted) + Delete All My Data in Options → Privacy & Data card
 - [x] Cookie/tracking disclosure — no cookies, no analytics; confirmed in Privacy Policy §10
 
-> **Note (2026-05-27):** All files currently reference `https://habittforge.me/linkedin-x-ai-extension/...` (GitHub CDN cache from deleted user-site repo still active). Once CDN cache clears (~1–2h after deletion), update all 6 files to `https://hassanzafarr.github.io/linkedin-x-ai-extension/...` and push. Files: `legal/privacy-policy.html`, `legal/terms-of-service.html`, `manifest.json`, `src/options/Options.jsx`, `STORE_LISTING.md`, `LEGAL_COMPLIANCE.md`.
+> **Done (2026-06-01):** All 6 files updated from `habittforge.me` → `hassanzafarr.github.io`. Files: `legal/privacy-policy.html`, `legal/terms-of-service.html`, `manifest.json`, `src/options/Options.jsx`, `STORE_LISTING.md`, `LEGAL_COMPLIANCE.md`.
 
 ## Phase 5: Store Listing
 
@@ -100,10 +100,10 @@
 
 ## Critical Blockers (must fix before submit)
 
-1. ~~Privacy policy URL live~~ ✅ — `https://hassanzafarr.github.io/linkedin-x-ai-extension/legal/privacy-policy.html` (pending CDN cache clear)
+1. ~~Privacy policy URL live~~ ✅ — `https://hassanzafarr.github.io/linkedin-x-ai-extension/legal/privacy-policy.html`
 2. ~~Real `homepage_url` in manifest~~ ✅ — set to privacy policy URL
 3. **API key UX** — bring-your-own model confirmed for v1 (no proxy)
 4. ~~Permission justifications written~~ ✅ — `STORE_LISTING.md`
 5. ~~LinkedIn/X ToS legal review~~ ✅ — `LEGAL_COMPLIANCE.md`
 6. **Paste Privacy Policy URL** in Chrome Web Store developer dashboard — do after CDN cache clears
-7. **Manual cross-browser QA** (Phase 2 matrix) — still pending
+7. ~~Manual cross-browser QA~~ ✅ — verified 2026-06-01

@@ -96,7 +96,7 @@ Checklist:
 **Data disclosure:** ✓ Store listing includes data handling disclosure
 **Permissions justified:** ✓ All permissions documented in STORE_LISTING.md
 **Privacy Policy URL:** Must be set in CWS developer dashboard
-  → `https://habittforge.me/linkedin-x-ai-extension/legal/privacy-policy.html`
+  → `https://hassanzafarr.github.io/linkedin-x-ai-extension/legal/privacy-policy.html`
 
 **Before submitting:**
 1. Host `legal/` folder at the URL above (GitHub Pages or equivalent)
