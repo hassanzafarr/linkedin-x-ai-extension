@@ -24,7 +24,8 @@
       "WebFetch(domain:habittforge.me)",
       "WebFetch(domain:github.com)",
       "Bash(node -e \"require\\('sharp'\\)\")",
-      "Bash(node -e ' *)"
+      "Bash(node -e ' *)",
+      "Bash(powershell Compress-Archive -Path dist\\\\* -DestinationPath engageflow-ai.zip -Force)"
     ],
     "additionalDirectories": [
       "X:\\Users\\HP\\.claude\\projects\\x--linkedin-x-ai-extension"
