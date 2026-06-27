@@ -4,7 +4,7 @@ import { safeSendMessage, ExtensionInvalidatedError } from '../lib/messaging.js'
 
 export default function IntentPicker({ postText, platform, onPick, onClose }) {
   const [activeId, setActiveId] = useState(null);
-  const [commentLength, setCommentLength] = useState('medium');
+  const [commentLength, setCommentLength] = useState('short');
   const [customMode, setCustomMode] = useState(false);
   const [customNote, setCustomNote] = useState('');
   const [error, setError] = useState('');

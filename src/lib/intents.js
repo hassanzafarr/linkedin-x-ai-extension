@@ -16,9 +16,9 @@ export const INTENTS = [
 export const INTENT_BY_ID = Object.fromEntries(INTENTS.map(i => [i.id, i]));
 
 export const COMMENT_LENGTHS = [
-  { id: 'short',  label: 'Short',  instruction: 'Keep it short: write exactly 1 crisp sentence, ideally under 140 characters unless the idea needs a little more room.' },
-  { id: 'medium', label: 'Medium', instruction: 'Use a medium length: write exactly 2 to 3 concise sentences with enough context to feel thoughtful, while staying within the platform limit.' },
-  { id: 'long',   label: 'Long',   instruction: 'Use a longer reply: write exactly 3 to 5 tight sentences, with a fuller explanation while staying skimmable and within the platform limit.' },
+  { id: 'short',  label: 'Short',  instruction: 'Keep it very short: write exactly 1 crisp sentence, 4 to 10 words max.' },
+  { id: 'medium', label: 'Medium', instruction: 'Keep it compact: write 1 to 2 short sentences, 24 words max total.' },
+  { id: 'long',   label: 'Long',   instruction: 'Keep it skimmable: write 2 to 3 tight sentences, 45 words max total.' },
 ];
 
 export const COMMENT_LENGTH_BY_ID = Object.fromEntries(COMMENT_LENGTHS.map(i => [i.id, i]));
@@ -38,17 +38,22 @@ export function countSentences(text) {
   return sentences.length;
 }
 
+export function countWords(text) {
+  if (!text) return 0;
+  return (text.trim().match(/\b[\w']+\b/g) || []).length;
+}
+
 export function validateReplyLength(reply, lengthId) {
   const count = countSentences(reply);
+  const words = countWords(reply);
   if (lengthId === 'short') {
-    return count === 1;
+    return count === 1 && words >= 1 && words <= 10;
   }
   if (lengthId === 'medium') {
-    return count >= 2 && count <= 3;
+    return count >= 1 && count <= 2 && words <= 24;
   }
   if (lengthId === 'long') {
-    return count >= 3 && count <= 5;
+    return count >= 2 && count <= 3 && words <= 45;
   }
   return true;
 }
-

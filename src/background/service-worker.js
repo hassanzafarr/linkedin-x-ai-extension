@@ -177,7 +177,7 @@ async function generateIntentReply({ postText, platform, intentId, commentLength
   if (!apiKey) throw new Error('NO_API_KEY');
 
   const intent = INTENT_BY_ID[intentId];
-  const length = COMMENT_LENGTH_BY_ID[commentLength] || COMMENT_LENGTH_BY_ID.medium;
+  const length = COMMENT_LENGTH_BY_ID[commentLength] || COMMENT_LENGTH_BY_ID.short;
   const intentLabel = intent?.label || 'Custom';
   const intentInstruction = intent?.instruction
     || 'Follow the user-provided direction exactly. Write a single reply that fits the post.';

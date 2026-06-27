@@ -33,8 +33,8 @@ export function buildIntentReplyPrompt({
   platform,
   intentLabel,
   intentInstruction,
-  lengthLabel = 'Medium',
-  lengthInstruction = 'Use a medium length: 2 to 3 concise sentences with enough context to feel thoughtful.',
+  lengthLabel = 'Short',
+  lengthInstruction = 'Keep it very short: write exactly 1 crisp sentence, 4 to 10 words max.',
   customNote,
 }) {
   const voiceSection = buildVoiceContext(voiceProfile)

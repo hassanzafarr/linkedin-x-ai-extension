@@ -34,7 +34,7 @@ Return ONLY a single integer (1, 2, 3, 4, or 5) representing your score. Do not 
       intentInstruction: 'Add a new insight, perspective, or angle that builds on the original post.',
       lengthId: 'short',
       lengthLabel: 'Short',
-      lengthInstruction: 'Keep it short: write exactly 1 crisp sentence, under 140 characters.',
+      lengthInstruction: 'Keep it very short: write exactly 1 crisp sentence, 4 to 10 words max.',
     },
     {
       platform: 'linkedin',
@@ -42,7 +42,7 @@ Return ONLY a single integer (1, 2, 3, 4, or 5) representing your score. Do not 
       intentInstruction: 'Write a light, genuinely funny reply that still fits the post. Keep it workplace-safe.',
       lengthId: 'medium',
       lengthLabel: 'Medium',
-      lengthInstruction: 'Use a medium length: write exactly 2 to 3 concise sentences with enough context to feel thoughtful.',
+      lengthInstruction: 'Keep it compact: write 1 to 2 short sentences, 24 words max total.',
     },
     {
       platform: 'linkedin',
@@ -50,7 +50,7 @@ Return ONLY a single integer (1, 2, 3, 4, or 5) representing your score. Do not 
       intentInstruction: 'Share a brief, concrete first-person experience that relates to the post.',
       lengthId: 'long',
       lengthLabel: 'Long',
-      lengthInstruction: 'Use a longer reply: write exactly 3 to 5 tight sentences, with a fuller explanation.',
+      lengthInstruction: 'Keep it skimmable: write 2 to 3 tight sentences, 45 words max total.',
     },
   ];
 
