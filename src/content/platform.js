@@ -5,7 +5,7 @@ export const PLATFORM_CONFIG = {
     postTextSelector: '.feed-shared-update-v2__description, .update-components-text, .comments-comment-item__comment-body, .comments-comment-item-content-body',
     engagementSelector: '.social-details-social-counts__reactions-count, .social-details-social-counts, .comments-comment-social-bar',
     replyButtonAnchor: '.feed-shared-social-action-bar, .social-actions-button, .comments-comment-social-bar, button.comment-reply-action',
-    composeBoxSelector: '.ql-editor[contenteditable="true"], div[role="textbox"][contenteditable="true"]',
+    composeBoxSelector: '.ql-editor[contenteditable="true"], .tiptap[contenteditable="true"], div[role="textbox"][contenteditable="true"]',
   },
   x: {
     feedPostSelector: 'article[data-testid="tweet"]',

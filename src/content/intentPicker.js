@@ -33,13 +33,29 @@ export function mountIntentPicker({ anchor, postText, platform, composerEl, onCl
 
   const rect = anchor.getBoundingClientRect();
   const panelWidth = 340;
-  const left = Math.max(8, Math.min(window.innerWidth - panelWidth - 8, rect.left));
-  const top = rect.bottom + 8;
+  const margin = 8;
+  const left = Math.max(margin, Math.min(window.innerWidth - panelWidth - margin, rect.left));
+
+  // Flip above the anchor when there isn't enough room below (e.g. comment box
+  // near the bottom of the viewport). Cap height and let the panel scroll so it
+  // never gets clipped off-screen.
+  const spaceBelow = window.innerHeight - rect.bottom - margin;
+  const spaceAbove = rect.top - margin;
+  const placeAbove = spaceBelow < 320 && spaceAbove > spaceBelow;
+  const maxHeight = Math.max(160, (placeAbove ? spaceAbove : spaceBelow));
+
+  const vEdge = placeAbove
+    ? `bottom: ${window.innerHeight - rect.top + margin}px;`
+    : `top: ${rect.bottom + margin}px;`;
+
   mountPoint.style.cssText = `
     position: fixed;
     left: ${left}px;
-    top: ${top}px;
+    ${vEdge}
     width: ${panelWidth}px;
+    max-height: ${maxHeight}px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
     z-index: 2147483647;
   `;
 
