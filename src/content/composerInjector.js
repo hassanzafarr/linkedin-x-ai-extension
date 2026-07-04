@@ -104,12 +104,6 @@ function injectX() {
 }
 
 function injectLinkedIn() {
-  // LinkedIn comment box toolbars contain emoji + image + GIF buttons in a flex row.
-  // Comment editor: .comments-comment-box, post composer: .share-box.
-  // LinkedIn ships frequent DOM/class changes, so we don't rely on exact toolbar
-  // class names. Instead we anchor off the editor, find the action-button row by
-  // walking up from a known action button (emoji/photo/GIF), and fall back to a
-  // floating button pinned to the editor when no toolbar row can be found.
   const editors = document.querySelectorAll('.ql-editor[contenteditable="true"], .tiptap[contenteditable="true"], div[role="textbox"][contenteditable="true"]');
   editors.forEach(editor => {
     const form = editor.closest(
@@ -120,8 +114,6 @@ function injectLinkedIn() {
     // Skip if we already injected for this editor's form.
     if (form.querySelector(`[${BTN_ATTR}]`)) return;
 
-    const toolbar = findLinkedInToolbar(form, editor);
-
     const getContext = () => ({
       composerEl: editor,
       postText: findLinkedInPostText(editor),
@@ -130,28 +122,83 @@ function injectLinkedIn() {
 
     const btn = makeIconButton(getContext);
 
-    if (toolbar) {
-      // Prepend so our icon is the first visible item (avoids being clipped
-      // when overflow:hidden cuts off the last child).
+    // LinkedIn toolbar is very compact — shrink our button to match native
+    // icon sizes (≈24px) and eliminate extra margins.
+    btn.style.width = '24px';
+    btn.style.height = '24px';
+    btn.style.minWidth = '24px';
+    btn.style.margin = '0';
+    btn.style.padding = '0';
+    btn.style.alignSelf = 'center';
+    btn.style.verticalAlign = 'middle';
+    const svg = btn.querySelector('svg');
+    if (svg) {
+      svg.setAttribute('width', '14');
+      svg.setAttribute('height', '14');
+    }
+
+    // Preferred placement: insert as a sibling right before a native action
+    // button (emoji/GIF/photo). Sharing the exact same parent means we inherit
+    // the same flex alignment, so we line up vertically with those icons.
+    const nativeBtn = form.querySelector(
+      'button[aria-label*="emoji" i], button[aria-label*="gif" i], button[aria-label*="image" i], button[aria-label*="photo" i], button[aria-label*="media" i]'
+    );
+    const sibling = nativeBtn?.parentElement?.contains(nativeBtn) ? nativeBtn : null;
+    const toolbar = sibling ? sibling.parentElement : findLinkedInToolbar(form, editor);
+
+    if (sibling) {
+      sibling.parentElement.insertBefore(btn, sibling);
+    } else if (toolbar) {
       toolbar.insertBefore(btn, toolbar.firstChild);
+    }
 
-      // Fix overflow:hidden on toolbar and up to 4 ancestor levels.
-      // LinkedIn's modern DOM wraps toolbars in containers that clip overflow.
+    if (toolbar) {
+      // Fix overflow clipping and hide any scrollbar.
       fixOverflowClipping(toolbar);
+      suppressScrollbar(toolbar);
 
-      // Verify visibility after layout — if still clipped, fall back to floating.
-      requestAnimationFrame(() => {
-        const rect = btn.getBoundingClientRect();
-        if (rect.width === 0 || rect.height === 0) {
-          btn.remove();
-          const fallbackBtn = makeIconButton(getContext);
-          mountFloatingLinkedInButton(form, editor, fallbackBtn);
-        }
-      });
+      // After layout: if clipped, fall back to floating. Otherwise align our
+      // icon's vertical center to the native button's center — robust against
+      // whatever alignment the toolbar uses.
+      requestAnimationFrame(() => centerLinkedInButton(btn, sibling, toolbar, getContext, form, editor));
     } else {
       mountFloatingLinkedInButton(form, editor, btn);
     }
   });
+}
+
+// Vertically center our injected icon against the row it lives in.
+// Reference, in order of preference:
+//   1. The explicit native sibling we inserted next to.
+//   2. The nearest native button/svg in the same toolbar that isn't ours.
+//   3. The toolbar's own content box center.
+function centerLinkedInButton(btn, sibling, toolbar, getContext, form, editor) {
+  const rect = btn.getBoundingClientRect();
+  if (rect.width === 0 || rect.height === 0) {
+    btn.remove();
+    const fallbackBtn = makeIconButton(getContext);
+    mountFloatingLinkedInButton(form, editor, fallbackBtn);
+    return;
+  }
+
+  let refTop, refHeight;
+  const ref = (sibling && sibling.getBoundingClientRect().height > 0)
+    ? sibling
+    : Array.from(toolbar.querySelectorAll(`button:not([${BTN_ATTR}]), svg`))
+        .find(el => !btn.contains(el) && el.getBoundingClientRect().height > 0);
+
+  if (ref) {
+    const r = ref.getBoundingClientRect();
+    refTop = r.top;
+    refHeight = r.height;
+  } else {
+    const t = toolbar.getBoundingClientRect();
+    refTop = t.top;
+    refHeight = t.height;
+  }
+
+  const delta = (refTop + refHeight / 2) - (rect.top + rect.height / 2);
+  btn.style.transform = Math.abs(delta) > 0.5 ? `translateY(${delta}px)` : '';
 }
 
 // Locate the LinkedIn comment-box action-button row. Tries known class names,
@@ -181,16 +228,35 @@ function findLinkedInToolbar(form, editor) {
   return null;
 }
 
-// Walk up from the toolbar and set overflow:visible on any ancestor that
-// clips content. Limited to 4 levels to avoid breaking unrelated layout.
+// Walk up from the element and set overflow:visible on any ancestor that
+// clips or scrolls content. Limited to 5 levels to avoid breaking layout.
 function fixOverflowClipping(el) {
   let cur = el;
   for (let i = 0; i < 5 && cur && cur !== document.body; i++) {
     const style = window.getComputedStyle(cur);
-    if (style.overflow === 'hidden' || style.overflowX === 'hidden') {
+    const ov = style.overflow;
+    const ovx = style.overflowX;
+    if (ov === 'hidden' || ov === 'auto' || ov === 'scroll' ||
+        ovx === 'hidden' || ovx === 'auto' || ovx === 'scroll') {
       cur.style.overflow = 'visible';
     }
     cur = cur.parentElement;
+  }
+}
+
+// Inject a <style> tag to suppress scrollbars on the toolbar and nearby
+// ancestors cross-browser, without affecting overflow behavior.
+function suppressScrollbar(toolbar) {
+  // Mark the toolbar so CSS can target it
+  toolbar.setAttribute('data-engageflow-toolbar', 'true');
+  toolbar.style.scrollbarWidth = 'none'; // Firefox
+  toolbar.style.msOverflowStyle = 'none'; // IE/Edge legacy
+  // Chrome / Safari — inject into document if not already done
+  if (!document.querySelector('#engageflow-scrollbar-fix')) {
+    const style = document.createElement('style');
+    style.id = 'engageflow-scrollbar-fix';
+    style.textContent = `[data-engageflow-toolbar]::-webkit-scrollbar { display: none !important; }`;
+    document.head.appendChild(style);
   }
 }
 

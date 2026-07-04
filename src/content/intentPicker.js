@@ -19,6 +19,7 @@ export function mountIntentPicker({ anchor, postText, platform, composerEl, onCl
     top: 0; left: 0;
     width: 0; height: 0;
     overflow: visible;
+    isolation: isolate;
   `;
   const shadow = host.attachShadow({ mode: 'open' });
 
@@ -28,8 +29,17 @@ export function mountIntentPicker({ anchor, postText, platform, composerEl, onCl
 
   const mountPoint = document.createElement('div');
   shadow.appendChild(mountPoint);
+
   document.body.appendChild(host);
   currentHost = host;
+
+  // ── Stacking context fix for LinkedIn modals ──
+  // LinkedIn post modals create a new CSS stacking context (via transform /
+  // will-change / isolation) that traps any document.body child behind it.
+  // Fix: walk up from the anchor and neutralise any ancestor that has
+  // transform or will-change set, so our fixed-position panel can paint
+  // above everything.
+  breakAncestorStackingContexts(anchor);
 
   const rect = anchor.getBoundingClientRect();
   const panelWidth = 340;
@@ -83,6 +93,37 @@ export function mountIntentPicker({ anchor, postText, platform, composerEl, onCl
     }
   };
   setTimeout(() => document.addEventListener('click', outsideClickHandler), 50);
+}
+
+/**
+ * Walk up from the anchor and remove CSS properties that create stacking
+ * contexts on ancestor elements (transform, will-change, isolation, filter).
+ * This allows our fixed-position panel on document.body to paint above
+ * LinkedIn's post modals, which otherwise trap child z-index values.
+ * We store original values so they could be restored, but in practice
+ * LinkedIn re-applies them on next render anyway.
+ */
+function breakAncestorStackingContexts(anchor) {
+  let cur = anchor.parentElement;
+  let depth = 0;
+  while (cur && cur !== document.body && depth < 30) {
+    const cs = window.getComputedStyle(cur);
+    // A stacking context is created by: transform != none, will-change
+    // containing transform/opacity, isolation:isolate, filter != none.
+    if (
+      cs.transform !== 'none' ||
+      cs.isolation === 'isolate' ||
+      cs.filter !== 'none' ||
+      (cs.willChange && cs.willChange !== 'auto' && cs.willChange !== '')
+    ) {
+      if (cs.transform !== 'none') cur.style.transform = 'none';
+      if (cs.isolation === 'isolate') cur.style.isolation = 'auto';
+      if (cs.filter !== 'none') cur.style.filter = 'none';
+      if (cs.willChange && cs.willChange !== 'auto') cur.style.willChange = 'auto';
+    }
+    cur = cur.parentElement;
+    depth++;
+  }
 }
 
 export function unmountIntentPicker() {
