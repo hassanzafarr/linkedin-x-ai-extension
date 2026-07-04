@@ -45,7 +45,7 @@ export async function callClaude(prompt, apiKey, { maxTokens = 1024 } = {}) {
   return extractJSON(text);
 }
 
-function extractJSON(text) {
+export function extractJSON(text) {
   let s = text.trim();
   const codeBlockRegex = /```(?:json)?\s*([\s\S]*?)\s*```/i;
   const fence = s.match(codeBlockRegex);

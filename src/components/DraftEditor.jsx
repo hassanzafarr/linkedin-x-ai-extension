@@ -51,7 +51,14 @@ export default function DraftEditor({ draft, platform, topic, tone, hookId, onRe
       platform,
     });
     setRefining(false);
-    if (res?.error) { setRefineErr(res.error); return; }
+    if (res?.error) {
+      setRefineErr(
+        res.error === 'FREE_LIMIT_REACHED' ? 'Free replies used up — add your API key in Settings.'
+        : res.error === 'NO_API_KEY' ? 'No API key set — open Settings.'
+        : res.error
+      );
+      return;
+    }
     if (res?.draft) setText(res.draft);
   }
 

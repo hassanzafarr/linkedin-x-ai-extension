@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getApiKey, saveApiKey, getVoiceProfile, saveVoiceProfile, getSettings, saveSettings, getDraftHistory, getScheduledPosts } from '../lib/storage.js';
+import { getApiKey, saveApiKey, getVoiceProfile, saveVoiceProfile, getSettings, saveSettings, getDraftHistory, getScheduledPosts, FREE_TRIAL_LIMIT } from '../lib/storage.js';
 import { useTheme } from '../hooks/useTheme.js';
 import ThemeToggle from '../components/ThemeToggle.jsx';
 
@@ -12,6 +12,8 @@ export default function Options() {
   const [replyEnabled, setReplyEnabled] = useState(true);
   const [threshold, setThreshold] = useState(60);
   const [defaultTone, setDefaultTone] = useState('professional');
+
+  const [freeTrialRemaining, setFreeTrialRemaining] = useState(FREE_TRIAL_LIMIT);
 
   const [testStatus, setTestStatus] = useState('idle'); // idle | testing | ok | error
   const [testError, setTestError] = useState('');
@@ -45,6 +47,9 @@ export default function Options() {
       setReplyEnabled(settings.replyEnabled);
       setThreshold(settings.feedScannerThreshold);
       setDefaultTone(settings.defaultTone);
+    });
+    chrome.runtime.sendMessage({ type: 'GET_FREE_TRIAL_STATUS' }).then(status => {
+      if (status?.remaining !== undefined) setFreeTrialRemaining(status.remaining);
     });
   }, []);
 
@@ -174,6 +179,13 @@ export default function Options() {
       {/* API Key */}
       <div className="card mb-5">
         <div className="section-title">Claude API Key</div>
+        {!apiKey && (
+          <p className={`text-xs mb-2 ${freeTrialRemaining > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
+            {freeTrialRemaining > 0
+              ? `Free trial: ${freeTrialRemaining}/${FREE_TRIAL_LIMIT} replies left. Add your own key below for unlimited use.`
+              : 'Free trial used up — add your own API key below to keep generating.'}
+          </p>
+        )}
         <div className="flex gap-2">
           <input
             type="password"
@@ -351,7 +363,7 @@ export default function Options() {
       <div className="card mt-5">
         <div className="section-title">Privacy &amp; Data</div>
         <p className="text-xs text-gray-500 dark:text-zinc-500 mb-4">
-          All data is stored locally on this device. No data is sent to EngageFlow AI servers.{' '}
+          Your settings, voice profile, and drafts are stored locally on this device. With your own API key set, replies go directly from your browser to Anthropic. During the free trial (no key set), the post text is relayed through our server to Anthropic and is not stored.{' '}
           <a
             className="text-emerald-600 hover:text-emerald-500 hover:underline dark:text-emerald-400 dark:hover:text-emerald-300"
             href="https://hassanzafarr.github.io/linkedin-x-ai-extension/legal/privacy-policy.html"

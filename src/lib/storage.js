@@ -32,6 +32,33 @@ export const getApiKey = async () => {
 export const saveApiKey = (key) =>
   chrome.storage.local.set({ claudeApiKey: key.trim() });
 
+// Anonymous per-install ID used to meter the free trial server-side. Not
+// tied to any account — just lets the backend count replies per install.
+export const getInstallId = async () => {
+  const { installId } = await chrome.storage.local.get('installId');
+  if (installId) return installId;
+  const id = crypto.randomUUID();
+  await chrome.storage.local.set({ installId: id });
+  return id;
+};
+
+export const FREE_TRIAL_LIMIT = 5;
+
+// Best-effort local cache of the free-trial count for display. The backend
+// is the source of truth; this just avoids a round trip to show the UI badge.
+export const getFreeTrialRemaining = async () => {
+  const { freeTrialRemaining } = await chrome.storage.local.get('freeTrialRemaining');
+  return typeof freeTrialRemaining === 'number' ? freeTrialRemaining : FREE_TRIAL_LIMIT;
+};
+
+export const saveFreeTrialRemaining = (remaining) =>
+  chrome.storage.local.set({ freeTrialRemaining: Math.max(0, remaining) });
+
+export const getFreeTrialStatus = async () => ({
+  remaining: await getFreeTrialRemaining(),
+  limit: FREE_TRIAL_LIMIT,
+});
+
 const SETTINGS_FIELDS = [
   'feedScannerEnabled',
   'feedScannerThreshold',

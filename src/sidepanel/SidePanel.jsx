@@ -337,7 +337,19 @@ function ComposeTab({
         </div>
       )}
 
-      {error && error !== 'NO_API_KEY' && (
+      {error === 'FREE_LIMIT_REACHED' && (
+        <div className="card text-center">
+          <p className="text-sm text-gray-600 dark:text-zinc-400 mb-2">Free replies used up.</p>
+          <button
+            className="text-emerald-600 text-sm hover:text-emerald-500 hover:underline dark:text-emerald-400 dark:hover:text-emerald-300"
+            onClick={() => chrome.runtime.openOptionsPage()}
+          >
+            Add your API key →
+          </button>
+        </div>
+      )}
+
+      {error && error !== 'NO_API_KEY' && error !== 'FREE_LIMIT_REACHED' && (
         <div className="card border-red-200 bg-red-50 dark:border-red-900/50 dark:bg-red-950/20">
           <p className="text-sm text-red-600 dark:text-red-400">
             {error === 'RATE_LIMIT'

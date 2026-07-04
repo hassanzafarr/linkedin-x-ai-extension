@@ -1,7 +1,7 @@
 {
   "type": "module",
   "name": "engageflow-extension",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "AI reply suggestions, feed scoring, and post drafting for LinkedIn and X",
   "private": true,
   "scripts": {

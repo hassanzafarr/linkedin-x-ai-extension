@@ -8,6 +8,7 @@ export default function IntentPicker({ postText, platform, onPick, onClose }) {
   const [customMode, setCustomMode] = useState(false);
   const [customNote, setCustomNote] = useState('');
   const [error, setError] = useState('');
+  const [needsSettings, setNeedsSettings] = useState(false);
   const [status, setStatus] = useState('');
   const [generatedReply, setGeneratedReply] = useState('');
   const [copied, setCopied] = useState(false);
@@ -15,6 +16,7 @@ export default function IntentPicker({ postText, platform, onPick, onClose }) {
   async function pick(intentId, note) {
     setActiveId(intentId);
     setError('');
+    setNeedsSettings(false);
     setStatus('Generating…');
     setGeneratedReply('');
     try {
@@ -34,6 +36,12 @@ export default function IntentPicker({ postText, platform, onPick, onClose }) {
       console.error('[IntentPicker]', err);
       if (err instanceof ExtensionInvalidatedError) {
         setError('Extension was updated — please refresh the page.');
+      } else if (err.message === 'FREE_LIMIT_REACHED') {
+        setError('Free replies used up —');
+        setNeedsSettings(true);
+      } else if (err.message === 'NO_API_KEY') {
+        setError('No API key set —');
+        setNeedsSettings(true);
       } else {
         setError(err.message || 'Failed');
       }
@@ -152,7 +160,11 @@ export default function IntentPicker({ postText, platform, onPick, onClose }) {
       </div>
 
       <div className={`status ${error ? 'error' : ''}`}>
-        {error ? error : status ? <><span className="spinner" />{status}</> : ''}
+        {error
+          ? (needsSettings
+              ? <>{error} <a onClick={() => chrome.runtime.openOptionsPage()}>Open Settings</a></>
+              : error)
+          : status ? <><span className="spinner" />{status}</> : ''}
       </div>
     </div>
   );

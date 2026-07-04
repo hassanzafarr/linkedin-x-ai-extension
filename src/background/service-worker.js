@@ -1,4 +1,5 @@
 import { callClaude } from '../lib/claude.js';
+import { callFreeTrial } from '../lib/freeTrial.js';
 import {
   buildReplyPrompt,
   buildDraftPostPrompt,
@@ -12,6 +13,8 @@ import { COMMENT_LENGTH_BY_ID, INTENT_BY_ID } from '../lib/intents.js';
 import { HOOK_BY_ID } from '../lib/hooks.js';
 import {
   getApiKey,
+  getInstallId,
+  getFreeTrialStatus,
   getSettings,
   saveSettings,
   getVoiceProfile,
@@ -93,6 +96,7 @@ async function handleMessage(msg, sender) {
     case 'GET_SETTINGS':     return await getAllSettings();
     case 'SAVE_SETTINGS':    return await persistSettings(msg);
     case 'GET_VOICE':        return await getVoiceProfile();
+    case 'GET_FREE_TRIAL_STATUS': return await getFreeTrialStatus();
     case 'SAVE_VOICE':       return await saveVoiceProfile(msg.voiceProfile);
     case 'TEST_API_KEY':     return await testApiKey(msg.apiKey);
     case 'IMPORT_LINKEDIN':  return await importLinkedIn(msg, sender);
@@ -109,10 +113,18 @@ async function handleMessage(msg, sender) {
   }
 }
 
+// Uses the user's own key when set (direct to Anthropic, unlimited). With no
+// key, falls back to our backend's metered free trial (5 replies/install).
+async function generateText(prompt, apiKey, opts) {
+  if (apiKey) return callClaude(prompt, apiKey, opts);
+  const installId = await getInstallId();
+  return callFreeTrial(prompt, installId, opts);
+}
+
 async function generateReply({ postText, platform }) {
   const [apiKey, voiceProfile] = await Promise.all([getApiKey(), getVoiceProfile()]);
   const prompt = buildReplyPrompt({ postText, voiceProfile, platform });
-  const raw = await callClaude(prompt, apiKey);
+  const raw = await generateText(prompt, apiKey);
   let suggestions;
   try { suggestions = JSON.parse(raw); } catch { throw new Error('PARSE_ERROR'); }
   if (!Array.isArray(suggestions)) throw new Error('PARSE_ERROR');
@@ -123,7 +135,7 @@ async function draftPost({ topic, platform, tone, hookId }) {
   const [apiKey, voiceProfile] = await Promise.all([getApiKey(), getVoiceProfile()]);
   const hookPattern = hookId ? HOOK_BY_ID[hookId] : null;
   const prompt = buildDraftPostPrompt({ topic, platform, tone, voiceProfile, hookPattern });
-  const raw = await callClaude(prompt, apiKey);
+  const raw = await generateText(prompt, apiKey);
   const draft = typeof raw === 'string' ? raw.replace(/^"|"$/g, '').trim() : raw;
   return { draft };
 }
@@ -132,7 +144,7 @@ async function draftVariants({ topic, platform, tone, hookId }) {
   const [apiKey, voiceProfile] = await Promise.all([getApiKey(), getVoiceProfile()]);
   const hookPattern = hookId ? HOOK_BY_ID[hookId] : null;
   const prompt = buildVariantsPrompt({ topic, platform, tone, voiceProfile, hookPattern });
-  const raw = await callClaude(prompt, apiKey, { maxTokens: platform === 'linkedin' ? 4000 : 2000 });
+  const raw = await generateText(prompt, apiKey, { maxTokens: platform === 'linkedin' ? 4000 : 2000 });
   let variants;
   try { variants = JSON.parse(raw); }
   catch { throw new Error('PARSE_ERROR'); }
@@ -143,20 +155,22 @@ async function draftVariants({ topic, platform, tone, hookId }) {
 async function refineDraft({ currentDraft, refineAction, customInstruction, platform }) {
   const [apiKey, voiceProfile] = await Promise.all([getApiKey(), getVoiceProfile()]);
   const prompt = buildRefinePrompt({ currentDraft, refineAction, customInstruction, platform, voiceProfile });
-  const raw = await callClaude(prompt, apiKey);
+  const raw = await generateText(prompt, apiKey);
   const draft = typeof raw === 'string' ? raw.replace(/^"|"$/g, '').trim() : String(raw);
   return { draft };
 }
 
 async function scorePost({ postText, platform }) {
   const apiKey = await getApiKey();
-  if (!apiKey) {
-    // fall back to heuristic if no API key
-    return { score: 50, reasons: ['Heuristic score — set API key for AI scoring'] };
-  }
   const prompt = buildScoringPrompt({ postText, platform });
-  const raw = await callClaude(prompt, apiKey);
-  try { return JSON.parse(raw); } catch { throw new Error('PARSE_ERROR'); }
+  try {
+    const raw = await generateText(prompt, apiKey);
+    return JSON.parse(raw);
+  } catch (err) {
+    if (err.message === 'FREE_LIMIT_REACHED') throw err;
+    if (!apiKey) return { score: 50, reasons: ['Heuristic score — free trial unavailable, set API key for AI scoring'] };
+    throw new Error('PARSE_ERROR');
+  }
 }
 
 async function getAllSettings() {
@@ -174,7 +188,6 @@ async function persistSettings({ settings, voiceProfile }) {
 
 async function generateIntentReply({ postText, platform, intentId, commentLength, customNote }) {
   const [apiKey, voiceProfile] = await Promise.all([getApiKey(), getVoiceProfile()]);
-  if (!apiKey) throw new Error('NO_API_KEY');
 
   const intent = INTENT_BY_ID[intentId];
   const length = COMMENT_LENGTH_BY_ID[commentLength] || COMMENT_LENGTH_BY_ID.short;
@@ -193,7 +206,7 @@ async function generateIntentReply({ postText, platform, intentId, commentLength
     customNote,
   });
 
-  const raw = await callClaude(prompt, apiKey);
+  const raw = await generateText(prompt, apiKey);
   const reply = typeof raw === 'string' ? raw.replace(/^"|"$/g, '').trim() : String(raw);
   return { reply };
 }

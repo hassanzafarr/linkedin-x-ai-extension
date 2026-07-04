@@ -24,6 +24,10 @@ export default function ReplyPanel({ postText, platform, onClose }) {
         setState('no-key');
         return;
       }
+      if (result.error === 'FREE_LIMIT_REACHED') {
+        setState('free-limit');
+        return;
+      }
       if (result.error) throw new Error(result.error);
       setSuggestions(result.suggestions);
       setState('loaded');
@@ -57,6 +61,13 @@ export default function ReplyPanel({ postText, platform, onClose }) {
       {state === 'no-key' && (
         <div className="no-key-msg">
           No Claude API key set.{' '}
+          <a onClick={() => chrome.runtime.openOptionsPage()}>Open Settings</a>
+        </div>
+      )}
+
+      {state === 'free-limit' && (
+        <div className="no-key-msg">
+          Free replies used up. Add your own Anthropic API key to keep going.{' '}
           <a onClick={() => chrome.runtime.openOptionsPage()}>Open Settings</a>
         </div>
       )}
