@@ -51,14 +51,7 @@ export default function DraftEditor({ draft, platform, topic, tone, hookId, onRe
       platform,
     });
     setRefining(false);
-    if (res?.error) {
-      setRefineErr(
-        res.error === 'FREE_LIMIT_REACHED' ? 'Free replies used up — add your API key in Settings.'
-        : res.error === 'NO_API_KEY' ? 'No API key set — open Settings.'
-        : res.error
-      );
-      return;
-    }
+    if (res?.error) { setRefineErr(res.error); return; }
     if (res?.draft) setText(res.draft);
   }
 
@@ -136,7 +129,14 @@ export default function DraftEditor({ draft, platform, topic, tone, hookId, onRe
 
       <div className="mt-3">
         <RefinePanel onRefine={handleRefine} loading={refining} />
-        {refineErr && <div className="text-xs text-red-500 dark:text-red-400 mt-1">{refineErr}</div>}
+        {refineErr && (
+          <div className="text-xs text-red-500 dark:text-red-400 mt-1">
+            {refineErr === 'FREE_LIMIT_REACHED' ? 'Free replies used up — ' : refineErr === 'NO_API_KEY' ? 'No API key set — ' : refineErr}
+            {(refineErr === 'FREE_LIMIT_REACHED' || refineErr === 'NO_API_KEY') && (
+              <a className="underline cursor-pointer" onClick={() => chrome.runtime.openOptionsPage()}>Open Settings</a>
+            )}
+          </div>
+        )}
       </div>
 
       {threadOpen && platform === 'x' && (

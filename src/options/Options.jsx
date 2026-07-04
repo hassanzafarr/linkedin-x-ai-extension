@@ -57,9 +57,7 @@ export default function Options() {
     setTestStatus('testing');
     setTestError('');
     const trimmed = apiKey.trim();
-    console.log('[Options] Testing key. Prefix:', trimmed.slice(0, 12), 'length:', trimmed.length);
     const result = await chrome.runtime.sendMessage({ type: 'TEST_API_KEY', apiKey: trimmed });
-    console.log('[Options] Test result:', result);
     setTestStatus(result.ok ? 'ok' : 'error');
     if (result.ok) {
       saveApiKey(trimmed).catch(err => console.error('[Options] saveApiKey failed:', err));
@@ -85,7 +83,6 @@ export default function Options() {
         type: 'IMPORT_LINKEDIN',
         profileUrl: profileUrl.trim(),
       });
-      console.log('[Options] Import result:', result);
       if (!result?.ok) {
         setImportStatus('error');
         setImportError(result?.error || 'Unknown error');
