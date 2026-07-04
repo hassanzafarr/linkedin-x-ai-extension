@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getApiKey, saveApiKey, getVoiceProfile, saveVoiceProfile, getSettings, saveSettings, getDraftHistory, getScheduledPosts, FREE_TRIAL_LIMIT } from '../lib/storage.js';
+import { getApiKey, saveApiKey, getVoiceProfile, saveVoiceProfile, getSettings, saveSettings, getDraftHistory, getScheduledPosts, getInstallId, FREE_TRIAL_LIMIT } from '../lib/storage.js';
 import { useTheme } from '../hooks/useTheme.js';
 import ThemeToggle from '../components/ThemeToggle.jsx';
 
@@ -135,10 +135,15 @@ export default function Options() {
 
   async function deleteAllData() {
     if (!confirm('Permanently delete ALL EngageFlow AI data? This cannot be undone.')) return;
+    // installId is preserved deliberately — it's not personal data, it just
+    // meters the free trial, and wiping it here would let this button be
+    // used to reset the trial for free.
+    const installId = await getInstallId();
     await Promise.all([
       chrome.storage.local.clear(),
       chrome.storage.sync.clear(),
     ]);
+    await chrome.storage.sync.set({ installId });
     setApiKey('');
     setVoiceSamples('');
     setStory('');

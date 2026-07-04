@@ -34,11 +34,20 @@ export const saveApiKey = (key) =>
 
 // Anonymous per-install ID used to meter the free trial server-side. Not
 // tied to any account — just lets the backend count replies per install.
+// Stored in sync (tied to the Chrome profile) rather than local, and
+// deliberately excluded from "Delete All My Data" (see Options.jsx), so
+// clearing local storage or that button can't be used to reset the trial.
 export const getInstallId = async () => {
-  const { installId } = await chrome.storage.local.get('installId');
-  if (installId) return installId;
+  const synced = await chrome.storage.sync.get('installId');
+  if (synced.installId) return synced.installId;
+  // Migrate anyone who got an ID before this moved to sync storage.
+  const local = await chrome.storage.local.get('installId');
+  if (local.installId) {
+    await chrome.storage.sync.set({ installId: local.installId });
+    return local.installId;
+  }
   const id = crypto.randomUUID();
-  await chrome.storage.local.set({ installId: id });
+  await chrome.storage.sync.set({ installId: id });
   return id;
 };
 
